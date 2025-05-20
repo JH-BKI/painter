@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teeth Painter</title>
+    <title>Fluoride Varnish Applicator</title>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js"></script>
-    <script src="./debug.js"></script>
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="./styles.css">
 
 </head>
@@ -44,27 +42,13 @@
 
 
     <div style="position:absolute;top:0;right:0;text-align:center; margin-top: 16px;">
-        <p><canvas id="paintPreview" width="256" height="256" style="border:1px solid #888; background: #222;"></canvas></p>
-        <p><input type="range" id="brushSize" min="2" max="100" value="20" style="width:200px;"></p>
-        <p><span id="brushSizeValue">20</span> px</p>
-        <p>
-          <label for="brushFudge">Brush Preview Fudge: </label>
-          <input type="range" id="brushFudge" min="-30" max="30" value="0" style="width:120px;">
-          <span id="brushFudgeValue">0</span> px
-        </p>
-        <p>
-          <label><input type="checkbox" id="useTextureBrush"> Use Texture Brush</label>
-        </p>
-        <p><input type="color" id="brushColor" value="#ff0000"></p>
+        <!-- Paint preview canvas removed for debug.js to handle -->
         <p>
           <button id="toggleModeBtn" style="padding:8px 16px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">
             Enable Painting
           </button>
-          <p id="pixelCounts">Painted: 0 / Paintable: 0</p>
         </p>
     </div>
-    
-    <canvas id="brushPreviewOverlay" width="64" height="64" style="position: absolute; pointer-events: none; z-index: 10; left: 0; top: 0; display: none;"></canvas>
     
     <div id="downstrokeWarning" style="display:none;position:fixed;top:40px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.9);color:white;padding:18px 32px;font-size:1.3em;border-radius:8px;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,0.2);font-family:sans-serif;">
       Please use downward brush strokes!
@@ -73,8 +57,9 @@
     <script>
     AFRAME.registerComponent('paintable-texture', {
         init: function () {
-            this.brushSize = 30;
-            this.brushColor = '#c57b26';
+            this.brushSize = 15; // Hardcoded
+            this.brushColor = '#7f400e'; // Hardcoded
+            this.brushPreviewFudge = 20; // Hardcoded
             this.isPainting = false;
             this.mouse = new THREE.Vector2();
             this.raycaster = new THREE.Raycaster();
@@ -107,9 +92,6 @@
                 this.brushSizeInput.addEventListener('input', (e) => {
                     this.brushSize = parseInt(e.target.value);
                     this.brushSizeValue.textContent = this.brushSize;
-                    if (this.showBrushPreview) {
-                        this.drawBrushPreview();
-                    }
                 });
                 this.brushSizeValue.textContent = this.brushSizeInput.value;
                 this.brushSize = parseInt(this.brushSizeInput.value);
@@ -117,24 +99,17 @@
             if (this.brushColorInput) {
                 this.brushColorInput.addEventListener('input', (e) => {
                     this.brushColor = e.target.value;
-                    if (this.showBrushPreview) {
-                        this.drawBrushPreview();
-                    }
                 });
                 this.brushColor = this.brushColorInput.value;
             }
 
             // Brush preview fudge factor
-            this.brushPreviewFudge = 0;
             this.brushFudgeInput = document.getElementById('brushFudge');
             this.brushFudgeValue = document.getElementById('brushFudgeValue');
             if (this.brushFudgeInput && this.brushFudgeValue) {
                 this.brushFudgeInput.addEventListener('input', (e) => {
                     this.brushPreviewFudge = parseInt(e.target.value);
                     this.brushFudgeValue.textContent = this.brushPreviewFudge;
-                    if (this.showBrushPreview) {
-                        this.drawBrushPreview();
-                    }
                 });
                 this.brushFudgeValue.textContent = this.brushFudgeInput.value;
                 this.brushPreviewFudge = parseInt(this.brushFudgeInput.value);
@@ -167,10 +142,6 @@
             this.maskCanvas.height = this.canvasResolution;
             this.maskCtx = this.maskCanvas.getContext('2d', { willReadFrequently: true });
 
-            // Preview
-            this.previewCanvas = document.getElementById('paintPreview');
-            this.previewCtx = this.previewCanvas.getContext('2d');
-
             // Texture
             this.texture = new THREE.CanvasTexture(this.paintCanvas);
             
@@ -200,7 +171,7 @@
                     this.calculateCoverage();
                     this.coverageNeedsUpdate = false;
                 }
-            }, 200);
+            }, 500);
 
             // Wait for model and mask to load
             this.el.addEventListener('model-loaded', () => {
@@ -218,12 +189,10 @@
             this.maskImage.onload = () => {
                 this.maskCtx.drawImage(this.maskImage, 0, 0, this.canvasResolution, this.canvasResolution);
                 this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
-                this.updatePreview();
             };
             if (this.maskImage.complete && this.maskImage.naturalWidth !== 0) {
                 this.maskCtx.drawImage(this.maskImage, 0, 0, this.canvasResolution, this.canvasResolution);
                 this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
-                this.updatePreview();
             }
 
             // Mouse painting
@@ -273,49 +242,8 @@
                 }
             });
 
-            // Brush preview overlay
-            this.brushPreviewOverlay = document.getElementById('brushPreviewOverlay');
-            this.brushPreviewCtx = this.brushPreviewOverlay.getContext('2d');
-            this.showBrushPreview = false;
-            // Helper to draw the brush preview
-            this.drawBrushPreview = () => {
-                this.brushPreviewCtx.clearRect(0, 0, 64, 64);
-                this.brushPreviewCtx.beginPath();
-                this.brushPreviewCtx.arc(
-                    32, 32,
-                    (this.brushSize + this.brushPreviewFudge) / 2,
-                    0, 2 * Math.PI
-                );
-                this.brushPreviewCtx.strokeStyle = this.brushColor;
-                this.brushPreviewCtx.lineWidth = 2;
-                this.brushPreviewCtx.stroke();
-            };
-            // Mouse move for brush preview
-            const updateBrushPreview = (e) => {
-                if (!this.paintMode) {
-                    this.brushPreviewOverlay.style.display = 'none';
-                    return;
-                }
-                this.showBrushPreview = true;
-                this.brushPreviewOverlay.style.display = 'block';
-                this.brushPreviewOverlay.style.left = (e.clientX - this.brushPreviewOverlay.width / 2) + 'px';
-                this.brushPreviewOverlay.style.top = (e.clientY - this.brushPreviewOverlay.height / 2) + 'px';
-                this.drawBrushPreview();
-            };
-            window.addEventListener('mousemove', updateBrushPreview);
-            // Hide preview when not painting or mouse leaves window
-            window.addEventListener('mouseout', () => {
-                this.brushPreviewOverlay.style.display = 'none';
-            });
-
             // Brush texture for fake normal effect
-            this.useTextureBrush = false;
-            this.useTextureBrushInput = document.getElementById('useTextureBrush');
-            if (this.useTextureBrushInput) {
-                this.useTextureBrushInput.addEventListener('change', (e) => {
-                    this.useTextureBrush = e.target.checked;
-                });
-            }
+            this.useTextureBrush = true;
             this.brushTexture = new window.Image();
             this.brushTexture.src = 'brush2.png'; // <-- Place your PNG here
             this.brushPattern = null;
@@ -361,11 +289,13 @@
                 const idx = (y * this.canvasResolution + x) * 4;
                 if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
                     this.paintLayerCtx.save();
-                    if (this.useTextureBrush && this.brushPattern) {
-                        this.paintLayerCtx.beginPath();
-                        this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
-                        this.paintLayerCtx.closePath();
-                        this.paintLayerCtx.clip();
+                    this.paintLayerCtx.beginPath();
+                    this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                    this.paintLayerCtx.closePath();
+                    this.paintLayerCtx.clip();
+                    if (this.brushPattern) {
+                        // Draw the texture
+                        this.paintLayerCtx.globalAlpha = 1.0;
                         this.paintLayerCtx.fillStyle = this.brushPattern;
                         this.paintLayerCtx.fillRect(
                             x - this.brushSize / 2,
@@ -373,6 +303,13 @@
                             this.brushSize,
                             this.brushSize
                         );
+                        // Overlay the color with some transparency
+                        this.paintLayerCtx.globalAlpha = 0.5; // Adjust for more/less color tint
+                        this.paintLayerCtx.fillStyle = this.brushColor;
+                        this.paintLayerCtx.beginPath();
+                        this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                        this.paintLayerCtx.fill();
+                        this.paintLayerCtx.globalAlpha = 1.0; // Reset alpha
                     } else {
                         this.paintLayerCtx.fillStyle = this.brushColor;
                         this.paintLayerCtx.beginPath();
@@ -382,31 +319,17 @@
                     this.paintLayerCtx.restore();
                     this.applyTexture(); // Only update texture on paint
                     this.coverageNeedsUpdate = true; // Batch coverage update
-                    this.updatePreview();
                 }
             }
         },
-        updatePreview: function() {
-            // Draw mask first
-            this.previewCtx.clearRect(0, 0, 256, 256);
-            this.previewCtx.drawImage(this.maskImage, 0, 0, 256, 256);
-            // Draw paint (scaled down, from paintLayerCanvas only)
-            this.previewCtx.globalAlpha = 1.0;
-            this.previewCtx.drawImage(this.paintLayerCanvas, 0, 0, 256, 256);
-            // No direct coverage calculation here
-        },
         calculateCoverage: function() {
             if (!this.maskData) return;
-            // Get the current paint data (from paintLayerCanvas only)
             const paintData = this.paintLayerCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
             let paintableCount = 0;
             let paintedCount = 0;
-            // Analyze each pixel
             for (let i = 0; i < this.maskData.data.length; i += 4) {
-                // Only count pixels that are white in the mask (all RGB channels > 200)
                 if (this.maskData.data[i] > 200 && this.maskData.data[i + 1] > 200 && this.maskData.data[i + 2] > 200) {
                     paintableCount++;
-                    // If pixel has been painted (non-transparent in paint layer)
                     if (paintData.data[i + 3] > 0) {
                         paintedCount++;
                     }
@@ -414,11 +337,8 @@
             }
             this.paintablePixels = paintableCount;
             this.paintedPixels = paintedCount;
-            document.getElementById('pixelCounts').textContent = `Painted: ${paintedCount} / Paintable: ${paintableCount}`;
-            // Update coverage display
             const coverage = paintableCount > 0 ? (paintedCount / paintableCount * 100).toFixed(1) : '0.0';
             this.coverageDisplay.textContent = `Coverage: ${coverage}%`;
-            // Add color coding based on coverage
             if (coverage < 25) {
                 this.coverageDisplay.style.background = 'rgba(255,0,0,0.7)';
             } else if (coverage < 50) {
@@ -451,8 +371,14 @@
       document.addEventListener('DOMContentLoaded', () => {
             const scene = document.querySelector('a-scene');
             if (scene) {
-                scene.addEventListener('loaded', () => {
-                    initDebug();
+                scene.addEventListener('loaded', () => { 
+                    console.log('scene loaded');
+                    if (AFRAME.utils.getUrlParameter('debug') === 'true') {
+                        var script = document.createElement('script');
+                        script.src = './debug.js';
+                        document.head.appendChild(script);
+                    }
+
                 });
             }
         });
