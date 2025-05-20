@@ -249,41 +249,47 @@
                 }
             };
 
-            // Mouse painting
+            // Touch painting support
             const sceneEl = this.el.sceneEl;
-            sceneEl.addEventListener('mousedown', (e) => {
-                // Check if we're clicking on a paintable area (do NOT block painting if view is locked)
+            sceneEl.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                //console.log('touchstart', e);
+                const touch = e.touches[0];
+                if (!touch) return;
                 const canvas = sceneEl.renderer.domElement;
                 const rect = canvas.getBoundingClientRect();
-                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                const clientX = touch.clientX;
+                const clientY = touch.clientY;
+                this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
                 this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
                 const intersects = this.raycaster.intersectObject(this.mesh, true);
-                
                 if (intersects.length > 0 && intersects[0].uv) {
                     const uv = intersects[0].uv;
                     const x = Math.floor(uv.x * this.canvasResolution);
                     const y = Math.floor((1 - uv.y) * this.canvasResolution);
                     const idx = (y * this.canvasResolution + x) * 4;
-                    
-                    // If we're on a paintable area, start painting and disable orbit controls
                     if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
                         this.isPainting = true;
-                        this.lastPaintY = e.clientY;
+                        this.lastPaintY = clientY;
                         this.downstrokeDelta = 0;
                         this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
-                        this.showBrushPreview(e.clientX, e.clientY);
-                        this.updateCursor(true);
+                        this.showBrushPreview(clientX, clientY);
                     }
                 }
-            });
-            
-            sceneEl.addEventListener('mousemove', (e) => {
-                // Always check if hovering over a paintable area
+            }, { passive: false });
+
+            sceneEl.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                //console.log('touchmove', e);
+                const touch = e.touches[0];
+                if (!touch) return;
                 const canvas = sceneEl.renderer.domElement;
                 const rect = canvas.getBoundingClientRect();
-                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                const clientX = touch.clientX;
+                const clientY = touch.clientY;
+                this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
                 this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
                 const intersects = this.raycaster.intersectObject(this.mesh, true);
                 let overPaintable = false;
@@ -297,13 +303,85 @@
                     }
                 }
                 if (this.isPainting) {
+                    this.showBrushPreview(clientX, clientY);
+                    // Call paintFromMouse with a synthetic event
+                    this.paintFromMouse({ clientX, clientY });
+                } else if (overPaintable) {
+                    this.showBrushPreview(clientX, clientY);
+                } else {
+                    this.hideBrushPreview();
+                }
+            }, { passive: false });
+
+            window.addEventListener('touchend', () => {
+                if (this.isPainting) {
+                    this.isPainting = false;
+                    this.lastPaintY = null;
+                    this.downstrokeDelta = 0;
+                    if (!this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
+                    }
+                    // Don't hide preview here; let touchmove handle it
+                }
+            });
+            window.addEventListener('touchcancel', () => {
+                this.isPainting = false;
+                this.hideBrushPreview();
+            });
+
+            sceneEl.addEventListener('mousemove', (e) => {
+                // Always check if hovering over a paintable area
+                if (!this.mesh) return; // Defensive: mesh may not be loaded yet
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                let overPaintable = false;
+                if (intersects.length > 0 && intersects[0] && intersects[0].uv) {
+                    const uv = intersects[0].uv;
+                    const x = Math.floor(uv.x * this.canvasResolution);
+                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                    const idx = (y * this.canvasResolution + x) * 4;
+                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                        overPaintable = true;
+                    }
+                }
+                if (this.isPainting) {
                     this.showBrushPreview(e.clientX, e.clientY);
+                    this.paintFromMouse(e);
                 } else if (overPaintable) {
                     this.showBrushPreview(e.clientX, e.clientY);
                 } else {
                     this.hideBrushPreview();
                 }
                 this.updateCursor(overPaintable);
+            });
+
+            sceneEl.addEventListener('mousedown', (e) => {
+                // Check if we're clicking on a paintable area (do NOT block painting if view is locked)
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                if (intersects.length > 0 && intersects[0].uv) {
+                    const uv = intersects[0].uv;
+                    const x = Math.floor(uv.x * this.canvasResolution);
+                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                    const idx = (y * this.canvasResolution + x) * 4;
+                    // If we're on a paintable area, start painting and disable orbit controls
+                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                        this.isPainting = true;
+                        this.lastPaintY = e.clientY;
+                        this.downstrokeDelta = 0;
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        this.showBrushPreview(e.clientX, e.clientY);
+                        this.updateCursor(true);
+                    }
+                }
             });
 
             window.addEventListener('mouseup', () => {
@@ -318,40 +396,6 @@
                 }
                 // On mouseup, update cursor (in case painting stopped)
                 this.updateCursor(false);
-            });
-            
-            sceneEl.addEventListener('mousemove', (e) => {
-                if (this.isPainting) {
-                    if (this.forceDownstrokes) {
-                        if (this.lastPaintY === null) {
-                            this.lastPaintY = e.clientY;
-                        }
-                        let deltaY = e.clientY - this.lastPaintY;
-                        if (deltaY > 0) { // Downstroke
-                            this.downstrokeDelta += deltaY;
-                            this.upstrokeDelta = 0; // Reset upstroke delta on down movement
-                            if (this.downstrokeDelta >= this.downstrokeThreshold) {
-                                this.paintFromMouse(e);
-                                this.downstrokeDelta = 0; // Reset after painting
-                            }
-                        } else if (deltaY < 0) { // Upstroke
-                            this.upstrokeDelta += Math.abs(deltaY);
-                            this.downstrokeDelta = 0; // Reset downstroke delta on up movement
-                            if (this.upstrokeDelta >= this.upstrokeThreshold) {
-                                const now = Date.now();
-                                if (now - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
-                                    const event = new CustomEvent('invalid-paint-direction', { detail: { direction: 'up' } });
-                                    window.dispatchEvent(event);
-                                    this.lastInvalidPaintEvent = now;
-                                }
-                                this.upstrokeDelta = 0; // Reset after firing
-                            }
-                        }
-                        this.lastPaintY = e.clientY;
-                    } else {
-                        this.paintFromMouse(e);
-                    }
-                }
             });
 
             // Brush texture for fake normal effect
