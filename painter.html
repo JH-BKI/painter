@@ -27,13 +27,15 @@
                             maxPolarAngle: 95;
                             maxAzimuthAngle: 85; 
                             minAzimuthAngle: -85; 
-                            minDistance: 3; 
-                            maxDistance: 4.5; 
+                            minDistance: 2.7; 
+                            maxDistance: 3.5; 
                             initialPosition: 0 3 3.5; 
                             rotateSpeed: 0.2; 
                             enablePan: false;
                             enableDamping: true;
-                            dampingFactor: 0.025;">
+                            dampingFactor: 0.025;
+                            enableRotate: true;
+                            enableZoom: true;">
                         </a-entity>
 
     </a-scene>
@@ -41,19 +43,24 @@
 
 
 
-    <div style="position:absolute;top:0;right:0;text-align:center; margin-top: 16px;">
-        <!-- Paint preview canvas removed for debug.js to handle -->
+    <div style="position:absolute;top:16px;right:16px;text-align:center;">
         <p>
-          <button id="toggleModeBtn" style="padding:8px 16px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">
-            Enable Painting
+          <button id="lockViewBtn" style="width:128px;  padding:8px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">
+            Lock View
           </button>
         </p>
+        <div id="zoomDisplay" style="width:128px; margin-top: 10px; padding: 8px; background: rgba(226, 219, 219, 0.5); color:black; border:2px solid black; border-radius: 4px;">
+          Zoom: <span id="zoomValue">0%</span>
+        </div>
     </div>
     
     <div id="downstrokeWarning" style="display:none;position:fixed;top:40px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.9);color:white;padding:18px 32px;font-size:1.3em;border-radius:8px;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,0.2);font-family:sans-serif;">
       Please use downward brush strokes!
     </div>
     
+    <!-- Brush preview overlay -->
+    <canvas id="brushPreviewOverlay" style="position:fixed;top:0;left:0;pointer-events:none;z-index:1001;display:none;"></canvas>
+
     <script>
     AFRAME.registerComponent('paintable-texture', {
         init: function () {
@@ -145,21 +152,21 @@
             // Texture
             this.texture = new THREE.CanvasTexture(this.paintCanvas);
             
-            this.toggleModeBtn = document.getElementById('toggleModeBtn');
+            this.lockViewBtn = document.getElementById('lockViewBtn');
             this.orbitCamera = document.querySelector('[camera]');
-            this.paintMode = false; // Start in orbit mode
+            this.isViewLocked = false; // Start with view unlocked
 
-            if (this.toggleModeBtn && this.orbitCamera) {
-                this.toggleModeBtn.addEventListener('click', () => {
-                    this.paintMode = !this.paintMode;
-                    if (this.paintMode) {
-                        this.toggleModeBtn.textContent = 'Enable Orbit';
-                        this.toggleModeBtn.style.background = '#f44336';
-                        this.orbitCamera.setAttribute('orbit-controls', 'enabled', false);
+            if (this.lockViewBtn && this.orbitCamera) {
+                this.lockViewBtn.addEventListener('click', () => {
+                    this.isViewLocked = !this.isViewLocked;
+                    if (this.isViewLocked) {
+                        this.lockViewBtn.textContent = 'Unlock View';
+                        this.lockViewBtn.style.background = '#f44336';
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
                     } else {
-                        this.toggleModeBtn.textContent = 'Enable Painting';
-                        this.toggleModeBtn.style.background = '#4CAF50';
-                        this.orbitCamera.setAttribute('orbit-controls', 'enabled', true);
+                        this.lockViewBtn.textContent = 'Lock View';
+                        this.lockViewBtn.style.background = '#4CAF50';
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
                     }
                 });
             }
@@ -195,21 +202,126 @@
                 this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
             }
 
+            // Brush preview overlay
+            this.brushPreviewCanvas = document.getElementById('brushPreviewOverlay');
+            this.brushPreviewCtx = this.brushPreviewCanvas.getContext('2d');
+            // Resize overlay to window
+            const resizeBrushPreview = () => {
+                this.brushPreviewCanvas.width = window.innerWidth;
+                this.brushPreviewCanvas.height = window.innerHeight;
+            };
+            resizeBrushPreview();
+            window.addEventListener('resize', resizeBrushPreview);
+
+            // Show/hide and update brush preview
+            this.showBrushPreview = (x, y) => {
+                this.brushPreviewCanvas.style.display = 'block';
+                this.brushPreviewCtx.clearRect(0, 0, this.brushPreviewCanvas.width, this.brushPreviewCanvas.height);
+                this.brushPreviewCtx.beginPath();
+                // Use brushSize + brushPreviewFudge for the radius
+                const radius = (this.brushSize + this.brushPreviewFudge) / 2;
+                this.brushPreviewCtx.arc(x, y, radius, 0, 2 * Math.PI);
+                this.brushPreviewCtx.strokeStyle = this.brushColor;
+                this.brushPreviewCtx.lineWidth = 2;
+                this.brushPreviewCtx.globalAlpha = 0.7;
+                this.brushPreviewCtx.stroke();
+                this.brushPreviewCtx.globalAlpha = 1.0;
+            };
+            this.hideBrushPreview = () => {
+                this.brushPreviewCanvas.style.display = 'none';
+                this.brushPreviewCtx.clearRect(0, 0, this.brushPreviewCanvas.width, this.brushPreviewCanvas.height);
+            };
+
+            // Helper to update cursor
+            this.updateCursor = (overPaintable) => {
+                if (this.isViewLocked) {
+                    if (overPaintable || this.isPainting) {
+                        document.body.style.cursor = 'crosshair';
+                    } else {
+                        document.body.style.cursor = 'not-allowed';
+                    }
+                } else {
+                    if (this.isPainting || overPaintable) {
+                        document.body.style.cursor = 'crosshair';
+                    } else {
+                        document.body.style.cursor = 'grab';
+                    }
+                }
+            };
+
             // Mouse painting
             const sceneEl = this.el.sceneEl;
             sceneEl.addEventListener('mousedown', (e) => {
-                if (!this.paintMode) return;
-                this.isPainting = true;
-                this.lastPaintY = e.clientY;
-                this.downstrokeDelta = 0;
+                // Check if we're clicking on a paintable area (do NOT block painting if view is locked)
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                
+                if (intersects.length > 0 && intersects[0].uv) {
+                    const uv = intersects[0].uv;
+                    const x = Math.floor(uv.x * this.canvasResolution);
+                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                    const idx = (y * this.canvasResolution + x) * 4;
+                    
+                    // If we're on a paintable area, start painting and disable orbit controls
+                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                        this.isPainting = true;
+                        this.lastPaintY = e.clientY;
+                        this.downstrokeDelta = 0;
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        this.showBrushPreview(e.clientX, e.clientY);
+                        this.updateCursor(true);
+                    }
+                }
             });
-            window.addEventListener('mouseup', () => {
-                this.isPainting = false;
-                this.lastPaintY = null;
-                this.downstrokeDelta = 0;
-            });
+            
             sceneEl.addEventListener('mousemove', (e) => {
-                if (this.isPainting && this.paintMode) {
+                // Always check if hovering over a paintable area
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                let overPaintable = false;
+                if (intersects.length > 0 && intersects[0].uv) {
+                    const uv = intersects[0].uv;
+                    const x = Math.floor(uv.x * this.canvasResolution);
+                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                    const idx = (y * this.canvasResolution + x) * 4;
+                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                        overPaintable = true;
+                    }
+                }
+                if (this.isPainting) {
+                    this.showBrushPreview(e.clientX, e.clientY);
+                } else if (overPaintable) {
+                    this.showBrushPreview(e.clientX, e.clientY);
+                } else {
+                    this.hideBrushPreview();
+                }
+                this.updateCursor(overPaintable);
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (this.isPainting) {
+                    this.isPainting = false;
+                    this.lastPaintY = null;
+                    this.downstrokeDelta = 0;
+                    if (!this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
+                    }
+                    // Don't hide preview here; let mousemove handle it
+                }
+                // On mouseup, update cursor (in case painting stopped)
+                this.updateCursor(false);
+            });
+            
+            sceneEl.addEventListener('mousemove', (e) => {
+                if (this.isPainting) {
                     if (this.forceDownstrokes) {
                         if (this.lastPaintY === null) {
                             this.lastPaintY = e.clientY;
@@ -250,6 +362,34 @@
             this.brushTexture.onload = () => {
                 this.brushPattern = this.paintLayerCtx.createPattern(this.brushTexture, 'repeat');
             };
+
+            // Add zoom tracking
+            this.zoomDisplay = document.getElementById('zoomValue');
+            this.initialDistance = 3.5; // Should match initialPosition.z
+
+            // Set default cursor on init
+            document.body.style.cursor = 'grab';
+        },
+        tick: function () {
+            // Real-time zoom update
+            const camera = document.querySelector('[camera]');
+            if (!camera) return;
+            const controls = camera.components['orbit-controls'];
+            if (!controls || !controls.controls) return;
+            const threeControls = controls.controls;
+            const currentDistance = threeControls.object.position.distanceTo(threeControls.target);
+            // Get min and max distance from orbit-controls attribute
+            const orbitAttr = camera.getAttribute('orbit-controls');
+            const minDistance = orbitAttr.minDistance || 2.7;
+            const maxDistance = orbitAttr.maxDistance || 3.5;
+            let zoomPercent = ((maxDistance - currentDistance) / (maxDistance - minDistance)) * 100;
+            zoomPercent = Math.max(0, Math.min(100, zoomPercent));
+            if (this.zoomDisplay) {
+                this.zoomDisplay.textContent = Math.round(zoomPercent) + '%';
+            }
+        },
+        remove: function() {
+            // No tick listener to clean up
         },
         applyTexture: function () {
             // Composite: base + paint layer

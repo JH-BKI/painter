@@ -2,3 +2,12 @@
 nav#navbarBottom {
     background: rgba(255, 255, 255, 0.5);
 }
+
+
+#stats {
+    left: auto !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    z-index: 2000 !important;
+  }

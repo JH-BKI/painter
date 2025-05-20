@@ -1,5 +1,17 @@
 // Debug module for handling development tools
 function initDebug() {
+    // Inject CSS to move stats panel to bottom right
+    const style = document.createElement('style');
+    style.textContent = `
+    .rs-base {
+    left: 16px !important;
+    top: auto !important;
+    bottom: 16px !important;
+    z-index: 2000 !important;
+    }
+    `;
+    document.head.appendChild(style);
+
     console.log('initDebug - debugging enabled');
     // Get the scene element
     const scene = document.querySelector('a-scene');
@@ -13,8 +25,8 @@ function initDebug() {
             paintPreview.width = 256;
             paintPreview.height = 256;
             paintPreview.style.position = 'fixed';
-            paintPreview.style.top = '60px';
-            paintPreview.style.right = '40px';
+            paintPreview.style.top = '350px';
+            paintPreview.style.left = '16px';
             paintPreview.style.border = '1px solid #888';
             paintPreview.style.background = '#222';
             paintPreview.style.zIndex = 1001;
