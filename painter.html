@@ -9,59 +9,202 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="./styles.css">
-
 </head>
 <body>
-    <a-scene>
-
-
+    <!-- A-Frame Scene: Sky is always visible -->
+    <a-scene embedded vr-mode-ui="enabled: false">
         <a-assets>
             <a-asset-item id="teethModel" src="./Dientes.glb"></a-asset-item>
             <img id="baseTexture" src="./base.png">
             <img id="maskTexture" src="./paint-mask.png">
+            <img id="sceneBg" src="./scene-background.jpg">
         </a-assets>
-        <a-entity gltf-model="#teethModel" paintable-texture position="0 1 0" scale="0.2 0.2 0.2"></a-entity>
-        <a-entity camera look-controls="enabled: false" 
-            orbit-controls="target: 0 3 0; 
-                            minPolarAngle: 75;  
-                            maxPolarAngle: 95;
-                            maxAzimuthAngle: 85; 
-                            minAzimuthAngle: -85; 
-                            minDistance: 2.7; 
-                            maxDistance: 3.5; 
-                            initialPosition: 0 3 3.5; 
-                            rotateSpeed: 0.2; 
-                            enablePan: false;
-                            enableDamping: true;
-                            dampingFactor: 0.025;
-                            enableRotate: true;
-                            enableZoom: true;">
-                        </a-entity>
-
+        <a-sky src="#sceneBg" rotation="0 -90 0"></a-sky>
+        <!-- Teeth and camera group, shown only in dryteeth/paintteeth states -->
+        <a-entity id="teethGroup" visible="false">
+            <a-entity gltf-model="#teethModel" paintable-texture position="0 1 0" scale="0.2 0.2 0.2"></a-entity>
+            <a-entity camera look-controls="enabled: false" 
+                orbit-controls="target: 0 3 0; 
+                                minPolarAngle: 75;  
+                                maxPolarAngle: 95;
+                                maxAzimuthAngle: 85; 
+                                minAzimuthAngle: -85; 
+                                minDistance: 2.7; 
+                                maxDistance: 3.5; 
+                                initialPosition: 0 3 3.5; 
+                                rotateSpeed: 0.2; 
+                                enablePan: false;
+                                enableDamping: true;
+                                dampingFactor: 0.025;
+                                enableRotate: true;
+                                enableZoom: true;">
+            </a-entity>
+        </a-entity>
     </a-scene>
 
+    <!-- Overlay UI: App State Screens -->
+    <div id="startScreen" class="aframe-overlay">
+        <figure class="image is-16by9">
+            <img src="splash.jpg" />
+          </figure>
+        <h3 class="is-size-3">Fluoride Varnish Application</h3>
+        <div class="block">
+            <p>In this immersive sikulation, you will learn about fluoride varnish application.</p>
+        </div>
+        <button class="button is-link" id="toInstructions">Start</button>
+    </div>
+    <div id="instructionsScreen" class="aframe-overlay">
+        <h3 class="is-size-3">Instructions</h3>
+        <div class="block">
+        <p>Follow the steps to learn about fluoride varnish application.</p>
+        <ul>
+            <li>Rotate: Drag to orbit</li>
+            <li>Zoom: Pinch or scroll</li>
+            <li>Paint: Tap/click and drag on teeth</li>
+        </ul>
+        </div>
+        <button class="button is-link" id="toDryTeeth">Next: Controls</button>
+    </div>
 
-
-
-    <div style="position:absolute;top:16px;right:16px;text-align:center;">
-        <p>
-          <button id="lockViewBtn" style="width:128px;  padding:8px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">
-            Lock View
-          </button>
-        </p>
-        <div id="zoomDisplay" style="width:128px; margin-top: 10px; padding: 8px; background: rgba(226, 219, 219, 0.5); color:black; border:2px solid black; border-radius: 4px;">
-          Zoom: <span id="zoomValue">0%</span>
+    <div id="dryTeethOverlay" class="aframe-overlay">  
+        <h3 class="is-size-3">Dry the mouth and teeth</h3>
+        <div class="block">
+        <p>Drying the mouth and teeth using the gauze. NOT FINISHED YET</p>
         </div>
     </div>
-    
-    <div id="downstrokeWarning" style="display:none;position:fixed;top:40px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.9);color:white;padding:18px 32px;font-size:1.3em;border-radius:8px;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,0.2);font-family:sans-serif;">
-      Please use downward brush strokes!
+
+    <div id="paintTeethOverlay" class="aframe-overlay" >
+        <h3 class="is-size-3">Apply FluorideVarnish</h3>
+        <div class="block">
+        <p>Apply the fluoride varnish using the brush. NOT FINISHED YET</p>
+        </div>
     </div>
-    
+
+    <div id="endScreen" class="aframe-overlay">
+        <h3 class="is-size-3">Summary</h3>
+        <div class="block">
+        <p>Dry Teeth Coverage: <span id="dryteethResult">0</span>%</p>
+        <p>Paint Teeth Coverage: <span id="paintteethResult">0</span>%</p>
+        </div>
+        <div class="block">
+        <p>Start the simulation again by selecting the restart button below.</p>
+        </div>
+        <button class="button is-link" id="restartApp">Restart</button>
+    </div>
+
+    <!-- Overlay UI: Only for dryteeth/paintteeth states -->
+    <div id="aframeContainer">
+        <div class="aframe-topright">
+            <button id="lockViewBtn">Lock View</button>
+            <div id="zoomDisplay">
+                Zoom: <span id="zoomValue">0%</span>
+            </div>
+        </div>
+        <div id="downstrokeWarning">
+            Please use downward brush strokes!
+        </div>
+        <button id="nextStateBtn" class="button is-link">Next</button>
+        <button id="clearBtn" class="button is-warning">Clear Fluoride</button>
+    </div>
     <!-- Brush preview overlay -->
-    <canvas id="brushPreviewOverlay" style="position:fixed;top:0;left:0;pointer-events:none;z-index:1001;display:none;"></canvas>
+    <canvas id="brushPreviewOverlay"></canvas>
+
 
     <script>
+    // App state management
+    let appState = 'start';
+    let dryteeth = 0;
+    let paintteeth = 0;
+    let currentCoverage = 0;
+    let paintableComponent = null;
+
+    function showState(state) {
+        console.log('App state changed to:', state);
+        document.getElementById('startScreen').style.display = (state === 'start') ? 'block' : 'none';
+        document.getElementById('instructionsScreen').style.display = (state === 'instructions') ? 'block' : 'none';
+        document.getElementById('endScreen').style.display = (state === 'end') ? 'block' : 'none';
+
+
+        document.getElementById('aframeContainer').style.display = (state === 'dryteeth' || state === 'paintteeth') ? 'block' : 'none';
+        // Show/hide next button only in aframe states
+        const nextBtn = document.getElementById('nextStateBtn');
+        nextBtn.style.display = (state === 'dryteeth' || state === 'paintteeth') ? 'block' : 'none';
+        // Show/hide coverage display
+        if (window.paintableComponent && window.paintableComponent.coverageDisplay) {
+            window.paintableComponent.coverageDisplay.style.display = (state === 'dryteeth' || state === 'paintteeth') ? 'block' : 'none';
+        }
+        // Show/hide teeth model and camera
+        const teethGroup = document.querySelector('#teethGroup');
+        if (teethGroup) {
+            teethGroup.setAttribute('visible', (state === 'dryteeth' || state === 'paintteeth'));
+        }
+        document.getElementById('dryTeethOverlay').style.display = (state === 'dryteeth') ? 'block' : 'none';
+        document.getElementById('paintTeethOverlay').style.display = (state === 'paintteeth') ? 'block' : 'none';
+    }
+
+    function resetPainting() {
+        if (paintableComponent) {
+            // Clear paint layer
+            paintableComponent.paintLayerCtx.clearRect(0, 0, paintableComponent.canvasResolution, paintableComponent.canvasResolution);
+            paintableComponent.paintLayerCtx.fillStyle = 'rgba(0,0,0,0)';
+            paintableComponent.paintLayerCtx.fillRect(0, 0, paintableComponent.canvasResolution, paintableComponent.canvasResolution);
+            paintableComponent.applyTexture();
+            paintableComponent.coverageNeedsUpdate = true;
+            paintableComponent.paintedPixels = 0;
+        }
+    }
+
+    // State transitions
+    document.getElementById('toInstructions').onclick = function() {
+        appState = 'instructions';
+        showState(appState);
+    };
+    document.getElementById('toDryTeeth').onclick = function() {
+        appState = 'dryteeth';
+        showState(appState);
+        resetPainting();
+    };
+    document.getElementById('nextStateBtn').onclick = function() {
+        if (appState === 'dryteeth') {
+            // Store dryteeth coverage
+            if (paintableComponent) {
+                dryteeth = paintableComponent.paintablePixels > 0 ? (paintableComponent.paintedPixels / paintableComponent.paintablePixels * 100).toFixed(1) : 0;
+            }
+            appState = 'paintteeth';
+            showState(appState);
+            resetPainting();
+        } else if (appState === 'paintteeth') {
+            // Store paintteeth coverage
+            if (paintableComponent) {
+                paintteeth = paintableComponent.paintablePixels > 0 ? (paintableComponent.paintedPixels / paintableComponent.paintablePixels * 100).toFixed(1) : 0;
+            }
+            appState = 'end';
+            showState(appState);
+            document.getElementById('dryteethResult').textContent = dryteeth;
+            document.getElementById('paintteethResult').textContent = paintteeth;
+            resetPainting();
+        }
+    };
+    document.getElementById('restartApp').onclick = function() {
+        dryteeth = 0;
+        paintteeth = 0;
+        appState = 'start';
+        showState(appState);
+        resetPainting();
+    };
+
+    // Wait for A-Frame to be ready to get the paintable component
+    document.addEventListener('DOMContentLoaded', () => {
+        const scene = document.querySelector('a-scene');
+        if (scene) {
+            scene.addEventListener('loaded', () => {
+                paintableComponent = document.querySelector('[paintable-texture]').components['paintable-texture'];
+            });
+        }
+    });
+    // Initial state
+    showState(appState);
+
     AFRAME.registerComponent('paintable-texture', {
         init: function () {
             this.brushSize = 15; // Hardcoded
@@ -566,6 +709,92 @@
                 });
             }
         });
+
+    // Add clear button logic
+    document.getElementById('clearBtn').onclick = function() {
+        if (paintableComponent) {
+            // Clear paint layer
+            paintableComponent.paintLayerCtx.clearRect(0, 0, paintableComponent.canvasResolution, paintableComponent.canvasResolution);
+            paintableComponent.paintLayerCtx.fillStyle = 'rgba(0,0,0,0)';
+            paintableComponent.paintLayerCtx.fillRect(0, 0, paintableComponent.canvasResolution, paintableComponent.canvasResolution);
+            paintableComponent.applyTexture();
+            paintableComponent.coverageNeedsUpdate = true;
+            paintableComponent.paintedPixels = 0;
+            paintableComponent.paintablePixels = 0;
+            // Recalculate coverage to update UI
+            if (typeof paintableComponent.calculateCoverage === 'function') {
+                paintableComponent.calculateCoverage();
+            }
+        }
+    };
+
+    // Sway camera component
+    AFRAME.registerComponent('sway-camera', {
+      schema: {
+        amplitude: {type: 'number', default: 5}, // degrees
+        speed: {type: 'number', default: 0.5},   // cycles per second
+        loops: {type: 'number', default: 1}      // number of cycles, -1 for infinite
+      },
+      init: function () {
+        this.baseRotation = this.el.getAttribute('rotation');
+        this.startTime = Date.now();
+        this.stopped = false;
+        // Lock orbit controls
+        if (this.el.components['orbit-controls']) {
+          this.el.setAttribute('orbit-controls', 'enableRotate', false);
+        }
+      },
+      tick: function () {
+        if (this.stopped) return;
+        const t = (Date.now() - this.startTime) / 1000;
+        let amplitude = this.data.amplitude;
+        let sway = 0;
+
+        if (this.data.loops !== -1) {
+          const totalTime = this.data.loops / this.data.speed; // seconds
+          const lastLoopStart = totalTime - (1 / this.data.speed);
+          if (t >= lastLoopStart) {
+            // Ease out in the last loop
+            const progress = (t - lastLoopStart) * this.data.speed; // 0 to 1
+            const ease = 1 - Math.pow(progress, 2); // quadratic ease-out
+            amplitude *= Math.max(0, ease);
+          }
+          if (t >= totalTime) {
+            this.stopped = true;
+            this.el.setAttribute('rotation', this.baseRotation);
+            if (this.el.components['orbit-controls']) {
+              this.el.setAttribute('orbit-controls', 'enableRotate', true);
+            }
+            this.el.removeAttribute('sway-camera');
+            return;
+          }
+        }
+
+        sway = amplitude * Math.sin(2 * Math.PI * this.data.speed * t);
+        this.el.setAttribute('rotation', {
+          x: this.baseRotation.x,
+          y: this.baseRotation.y + sway,
+          z: this.baseRotation.z
+        });
+      }
+    });
+
+    // Global function to toggle camera sway from the console
+    window.toggleCameraSway = function(amplitude = 5, speed = 0.2, loops = 1) {
+      const cameraEl = document.querySelector('[camera]');
+      if (!cameraEl) {
+        console.warn('Camera entity not found!');
+        return;
+      }
+      if (cameraEl.hasAttribute('sway-camera')) {
+        cameraEl.removeAttribute('sway-camera');
+        cameraEl.setAttribute('rotation', {x: 0, y: 0, z: 0});
+        console.log('Camera sway disabled.');
+      } else {
+        cameraEl.setAttribute('sway-camera', `amplitude: ${amplitude}; speed: ${speed}; loops: ${loops}`);
+        console.log('Camera sway enabled.');
+      }
+    };
     </script>
 </body>
 </html>

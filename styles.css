@@ -1,13 +1,132 @@
+html, body, a-scene {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  a-scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+  .a-enter-vr-button {
+    display: none !important;
+  }
+  .aframe-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    background: rgba(255,255,255,0.95);
+    padding: 16px 24px;
+    border-radius: 8px;
+    z-index: 20;
+    min-width: 320px;
+    max-width: 90vw;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    pointer-events: auto;
+    display: none;
+  }
+  
+  #dryTeethOverlay.aframe-overlay, #paintTeethOverlay.aframe-overlay {
+    top: 100%;
+    transform: translateX(-50%) translateY(-120%);
+  }
 
+
+  /* Overlay UI should be above the scene */
+
+  #aframeContainer > *, #startScreen > *, #instructionsScreen > *, #endScreen > *, #dryTeethOverlay > *, #paintTeethOverlay > * {
+    pointer-events: auto;
+  }
+
+
+/* Navigation bar */
 nav#navbarBottom {
     background: rgba(255, 255, 255, 0.5);
 }
 
-
+/* Stats panel */
 #stats {
     left: auto !important;
     right: 0 !important;
     top: auto !important;
     bottom: 0 !important;
     z-index: 2000 !important;
-  }
+}
+
+
+/* A-Frame container */
+#aframeContainer {
+    position: relative;
+}
+
+/* Top right controls */
+.aframe-topright {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    text-align: center;
+}
+
+#lockViewBtn {
+    width: 128px;
+    padding: 8px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#zoomDisplay {
+    width: 128px;
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(226, 219, 219, 0.5);
+    color: black;
+    border: 2px solid black;
+    border-radius: 4px;
+}
+
+#downstrokeWarning {
+    display: none;
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,0,0,0.9);
+    color: white;
+    padding: 18px 32px;
+    font-size: 1.3em;
+    border-radius: 8px;
+    z-index: 1000;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    font-family: sans-serif;
+}
+
+#nextStateBtn {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 2002;
+}
+
+#clearBtn {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    z-index: 2002;
+}
+
+#brushPreviewOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1001;
+    display: none;
+}
