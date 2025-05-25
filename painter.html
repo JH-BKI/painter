@@ -11,6 +11,7 @@
     <script src="./sequencer.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="./styles.css">
 </head>
@@ -36,16 +37,24 @@
             <img id="sceneBg" src="./scene-background.jpg" alt="Scene background">
             <img id="baseTextureDryComplete" src="dryteeth-complete.png" alt="Dry teeth complete texture">
             <img id="baseTexturePaintComplete" src="paintteeth-complete.png" alt="Paint teeth complete texture">
+            <!-- audio -->
+            <audio id="SFX-100-percent" src="SFX-100-percent.mp3" preload="auto"></audio>
+            <audio id="SFX-90-percent" src="SFX-90-percent.mp3" preload="auto"></audio>
+            <audio id="SFX-state-transition" src="SFX-state-transition.mp3" preload="auto"></audio>
+            <audio id="SFX-drying" src="SFX-drying.mp3" preload="auto"></audio>
+            <audio id="SFX-painting" src="SFX-painting.mp3" preload="auto"></audio>
+        
         </a-assets>
         <a-sky src="#sceneBg" rotation="0 -90 0"></a-sky>
         <!-- Teeth and camera group, shown only in dryteeth/paintteeth states -->
         <a-entity id="teethGroup" visible="false">
-            <!-- Single ambient light for even illumination -->
-            <a-light type="ambient" color="#ffffff" intensity="1"></a-light>
-            <!-- Left directional light at 45 degrees -->
-            <a-light type="directional" color="#ffffff" intensity="0.9" position="-1 4 1" look-at="0 3 0"></a-light>
-            <!-- Right directional light at 45 degrees -->
-            <a-light type="directional" color="#ffffff" intensity="0.9" position="1 5 1" look-at="0 3 0"></a-light>
+
+
+            
+                <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
+                <a-light type="directional" color="#fff" intensity="1.5" position="3.3 4 1.5"></a-light>
+                <a-light type="directional" color="#fff" intensity="1.5" position="-3.3 4 -1.5"></a-light>
+                <a-light type="directional" color="#fff" intensity="3.5" position="0 4 3.3"></a-light>
             
             <a-entity gltf-model="#teethModel" paintable-texture position="0 1 0" scale="0.2 0.2 0.2"></a-entity>
             <a-entity camera look-controls="enabled: false" 
@@ -53,8 +62,8 @@
                                 minPolarAngle: 75;  
                                 maxPolarAngle: 95;
                                 maxAzimuthAngle: 85; 
-                                minAzimuthAngle: -85;   
-                                minDistance: 2.7; 
+                                minAzimuthAngle: -85; 
+                                minDistance: 2.5; 
                                 maxDistance: 3.5; 
                                 initialPosition: 0 3 3.5; 
                                 rotateSpeed: 0.2; 
@@ -74,16 +83,16 @@
             <div class="modal-card">
                 <section class="modal-card-body">
                     <div class="block">
-                        <figure class="image is-16by9">
+        <figure class="image is-16by9">
                             <img src="splash.jpg" alt="Application splash screen" />
-                        </figure>
+          </figure>
                     </div>
-                    <div class="block">
+        <div class="block">
                         <h1 class="is-size-3">Virtual Application of Fluoride Varnish</h1>
-                    </div>
+        </div>
                     <div class="block">
                         <p>In this immersive simulation, you will practice the application of fluoride varnish on a set of virtual teeth.</p>
-                    </div>
+    </div>
                 </section>
                 <footer class="modal-card-foot">
                     <div class="buttons">
@@ -99,7 +108,7 @@
             <div class="modal-background"></div>
             <div class="modal-card">
                 <section class="modal-card-body">
-                    <div class="block">
+        <div class="block">
                         <h2 class="is-size-3">How to use this simulation</h2>
                     </div>
 
@@ -110,9 +119,9 @@
                                 <ul>
                                     <li><u>Mouse:</u> Hold down left mouse button and drag</li>
                                     <li><u>Touchscreen:</u> Touch and drag with your finger</li>
-                                </ul>
-                            </div>
-                        </div>
+        </ul>
+        </div>
+    </div>
                         <div class="column">                        
                             <figure class="image is-16by9">
                                 <img src="TBA" alt="Rotation demonstration" />
@@ -122,14 +131,14 @@
                     </div>
                     <div class="columns is-desktop">
                         <div class="column">
-                            <div class="block">
+        <div class="block">
                                 <h3 class="is-size-4">Zoom in/out:</h3>
                                 <ul>
                                     <li><u>Mouse:</u> Scroll up/down with the middle mousewheel</li>
                                     <li><u>Touchscreen:</u> Pinch in/out with your fingers</li>
                                 </ul>
-                            </div>
-                        </div>
+        </div>
+    </div>
                         <div class="column">                        
                             <figure class="image is-16by9">
                                 <img src="TBA" alt="Zoom demonstration" />
@@ -139,13 +148,13 @@
                     </div>
                     <div class="columns is-desktop">
                         <div class="column">
-                            <div class="block">
+        <div class="block">
                                 <h3 class="is-size-4">Dry teeth/apply fluoride</h3><BR><small>(specified areas only)</small>
                                 <ul>
                                     <li><u>Mouse:</u> Hold down left mouse button and drag on selected areas</li>
                                     <li><u>Touchscreen:</u> Touch and drag with your finger on selected areas</li>
                                 </ul>
-                            </div>
+        </div>
                         </div>
                         <div class="column">                        
                             <figure class="image is-16by9">
@@ -162,11 +171,11 @@
                     </div>
                 </footer>
             </div>
-        </div>
+        </div>        
     </div>
 
     <div id="dryteeth" class="aframe-overlay annotate">  
-        <button class="button is-medium is-link top-left-general-info" id="dryteeth-instructions-toggle" aria-label="Toggle dry teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="dryteeth-instructions-toggle" aria-label="Toggle dry teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
         <div class="box top-left-general-instructions" id="dryteeth-instructions">
             <h4 class="is-size-4">Step 1: Dry Teeth</h4>
@@ -182,7 +191,7 @@
     </div>
 
     <div id="paintteeth" class="aframe-overlay annotate">  
-        <button class="button is-medium is-link top-left-general-info" id="paintteeth-instructions-toggle" aria-label="Toggle paint teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="paintteeth-instructions-toggle" aria-label="Toggle paint teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
         <div class="box top-left-general-instructions" id="paintteeth-instructions">
             <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
@@ -205,13 +214,13 @@
                     <div class="block">
                         <p>In this immersive simulation, you will practice the application of fluoride varnish on a set of virtual teeth.</p>
                     </div>
-                    <div class="block">
-                        <p>Dry Teeth Coverage: <span id="dryteethResult">0</span>%</p>
-                        <p>Paint Teeth Coverage: <span id="paintteethResult">0</span>%</p>
-                    </div>
-                    <div class="block">
+        <div class="block">
+        <p>Dry Teeth Coverage: <span id="dryteethResult">0</span>%</p>
+        <p>Paint Teeth Coverage: <span id="paintteethResult">0</span>%</p>
+        </div>
+        <div class="block">
                         <p>Start the simulation again with the <b>Restart</b> button below.</p>
-                    </div>
+        </div>
                 </section>
                 <footer class="modal-card-foot">
                     <div class="buttons">
@@ -225,7 +234,16 @@
     <!-- Overlay UI: Only for dryteeth/paintteeth states -->
     <div id="aframeContainer">
         <div class="aframe-topright">
-            <button id="lockViewBtn" aria-label="Lock view">Lock View</button>
+            <button class="button is-medium is-success tooltip is-tooltip-right" data-tooltip="Viewport lock is OFF" id="lockViewBtn" aria-label="Lock/unlock view">
+                <i class="fa-solid fa-lock lock-view"  aria-hidden="true" style="display:none;"></i>
+                <i class="fa-solid fa-lock-open unlock-view"  aria-hidden="true" style="display:block;"></i>
+            </button>
+
+            <button class="button is-medium is-link tooltip is-tooltip-left" data-tooltip="Window view enabled" id="fullscreenBtn" aria-label="Fullscreen view">
+                <i class="fa-solid fa-compress minimise-view"  aria-hidden="true" style="display:none;"></i>
+                <i class="fa-solid fa-expand maximise-view"  aria-hidden="true" style="display:block;"></i>
+            </button>
+
             <div id="zoomDisplay" class="box" role="status" aria-live="polite">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><BR><span id="zoomValue">0%</span>
             </div>
@@ -240,7 +258,7 @@
                 
                      <span id="coverageNumber" class="coverage-number">0%</span>
                      <span id="coverageClip" class="coverage-number">0%</span>                    
-            </div>
+        </div>
             <div class="nextButtonContainer" style="display:none;">
                 <button id="nextStateBtn" class="button is-medium is-link shared-with-icon" aria-label="Proceed to next step">Continue <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                 <span id="coverageCheck" ><i class="fa-solid fa-circle-check animate-once"></i></span>
@@ -364,6 +382,7 @@
                     const overlay = button.closest('.aframe-overlay');
                     const instructionBox = overlay.querySelector('.top-left-general-instructions');
                     if (instructionBox) {
+                        // Reset the instruction box state
                         instructionBox.style.display = 'block';
                         instructionBox.classList.remove('fade-out');
                         instructionBox.classList.add('fade-in');
@@ -371,17 +390,23 @@
                         if (icon) {
                             icon.className = 'fa-solid fa-xmark';
                         }
-                    }
 
-                    // Start new timer
-                    autoHideTimeout = setTimeout(() => {
-                        const overlay = button.closest('.aframe-overlay');
-                        const instructionBox = overlay.querySelector('.top-left-general-instructions');
-                        if (instructionBox && instructionBox.style.display !== 'none') {
-                            toggleInstructions();
-                        }
-                        autoHideTimeout = null;
-                    }, 8000);
+                        // Start new timer
+                        autoHideTimeout = setTimeout(() => {
+                            if (instructionBox && instructionBox.style.display !== 'none') {
+                                instructionBox.classList.remove('fade-in');
+                                instructionBox.classList.add('fade-out');
+                                instructionBox.addEventListener('animationend', function handler() {
+                                    instructionBox.style.display = 'none';
+                                    instructionBox.removeEventListener('animationend', handler);
+                                }, { once: true });
+                                if (icon) {
+                                    icon.className = 'fa-solid fa-question';
+                                }
+                            }
+                            autoHideTimeout = null;
+                        }, 7000);
+                    }
                 }
             };
 
@@ -404,6 +429,11 @@
 
             const originalSetState = sequencer.setState.bind(sequencer);
             sequencer.setState = function(state) {
+                // Hide nextButtonContainer if entering dryteeth or paintteeth
+                if (state === 'dryteeth' || state === 'paintteeth') {
+                    const nextButtonContainer = document.querySelector('.nextButtonContainer');
+                    if (nextButtonContainer) nextButtonContainer.style.display = 'none';
+                }
                 clearAutoHideTimer(); // Clear timer before state change
                 const result = originalSetState(state);
                 if (result) {
@@ -442,7 +472,7 @@
     AFRAME.registerComponent('paintable-texture', {
         init: function () {
             this.brushSize = 15;
-            this.brushColor = '#7f400e94';
+            this.brushColor = '#d4c788';
             this.brushPreviewFudge = 20;
             this.isPainting = false;
             this.mouse = new THREE.Vector2();
@@ -453,11 +483,13 @@
             this.lastPaintY = null;
             this.downstrokeThreshold = 10;
             this.downstrokeDelta = 0;
-            this.upstrokeThreshold = 20;
+            this.upstrokeThreshold = 15;
             this.upstrokeDelta = 0;
             this.lastInvalidPaintEvent = 0;
             this.invalidPaintCooldown = 5000;
             this.isDryTeethState = false;  // Track if we're in dry teeth state
+            this.isPaintTeethState = false; // Track if we're in paint teeth state
+            this.SFXPlayed90 = false;
             
 
 
@@ -489,6 +521,7 @@
 
             // Texture
             this.texture = new THREE.CanvasTexture(this.paintCanvas);
+            this.texture.encoding = THREE.sRGBEncoding;
             
             this.lockViewBtn = document.getElementById('lockViewBtn');
             this.orbitCamera = document.querySelector('[camera]');
@@ -497,19 +530,51 @@
             if (this.lockViewBtn && this.orbitCamera) {
                 this.lockViewBtn.addEventListener('click', () => {
                     this.isViewLocked = !this.isViewLocked;
+                    const lockIcon = this.lockViewBtn.querySelector('.lock-view');
+                    const unlockIcon = this.lockViewBtn.querySelector('.unlock-view');
                     if (this.isViewLocked) {
                         showNotification('The viewport is locked, movement is restricted.', 'is-danger is-light');
-                        this.lockViewBtn.textContent = 'Unlock View';
-                        this.lockViewBtn.style.background = '#f44336';
+                        if (lockIcon) lockIcon.style.display = 'block';
+                        if (unlockIcon) unlockIcon.style.display = 'none';
+                        lockViewBtn.setAttribute("data-tooltip","Viewport lock is ON");
+                        lockViewBtn.classList.remove('is-success');
+                        lockViewBtn.classList.add('is-danger');
                         this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
                     } else {
                         showNotification('Viewport unlocked, movement is now active.');
-                        this.lockViewBtn.textContent = 'Lock View';
-                        this.lockViewBtn.style.background = '#4CAF50';
+                        if (lockIcon) lockIcon.style.display = 'none';
+                        if (unlockIcon) unlockIcon.style.display = 'block';
+                        lockViewBtn.setAttribute("data-tooltip","Viewport lock is OFF");
+                        lockViewBtn.classList.remove('is-danger');
+                        lockViewBtn.classList.add('is-success');
                         this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
                     }
                 });
             }
+
+            this.fullscreenBtn = document.getElementById('fullscreenBtn');
+            this.isFullscreen = false;
+            if (this.fullscreenBtn) {
+                this.fullscreenBtn.addEventListener('click', () => {
+                    this.isFullscreen = !this.isFullscreen;
+                    const minimiseIcon = this.fullscreenBtn.querySelector('.minimise-view');
+                    const maximiseIcon = this.fullscreenBtn.querySelector('.maximise-view');
+                    if (this.isFullscreen) {
+                        document.documentElement.requestFullscreen();
+                        showNotification('Fullscreen view enabled.');
+                        if (minimiseIcon) minimiseIcon.style.display = 'block';
+                        if (maximiseIcon) maximiseIcon.style.display = 'none';
+                        fullscreenBtn.setAttribute("data-tooltip","Fullscreen view enabled");
+                    } else {
+                        document.exitFullscreen();
+                        showNotification('Windowed view enabled.');
+                        if (minimiseIcon) minimiseIcon.style.display = 'none';
+                        if (maximiseIcon) maximiseIcon.style.display = 'block';
+                        fullscreenBtn.setAttribute("data-tooltip","Window view enabled");
+                    }
+                });
+            }
+
 
             // Coverage batching
             this.coverageNeedsUpdate = false;
@@ -517,8 +582,9 @@
                 if (this.coverageNeedsUpdate) {
                     this.calculateCoverage();
                     this.coverageNeedsUpdate = false;
+                    console.log('Coverage updated to: ', coverage);
                 }
-            }, 500);
+            }, 250);
 
             // Wait for model to load
             this.el.addEventListener('model-loaded', () => {
@@ -527,16 +593,6 @@
                 // Set initial textures
                 this.changeTextures('baseTextureDry', 'maskTextureDry');
             });
-
-            // Remove incorrect mask canvas handling
-            // this.maskCanvas.onload = () => {
-            //     this.maskCtx.drawImage(this.maskCanvas, 0, 0, this.canvasResolution, this.canvasResolution);
-            //     this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
-            // };
-            // if (this.maskCanvas.complete && this.maskCanvas.naturalWidth !== 0) {
-            //     this.maskCtx.drawImage(this.maskCanvas, 0, 0, this.canvasResolution, this.canvasResolution);
-            //     this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
-            // }
 
             // Brush preview overlay
             this.brushPreviewCanvas = document.getElementById('brushPreviewOverlay');
@@ -570,8 +626,8 @@
             // Helper to update cursor
             this.updateCursor = (overPaintable) => {
                 if (overPaintable) {
-                    document.body.style.cursor = 'crosshair';
-                } else {
+                        document.body.style.cursor = 'crosshair';
+                    } else {
                     if (this.isViewLocked) {
                         document.body.style.cursor = 'not-allowed';
                     } else {
@@ -598,6 +654,16 @@
                 this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
                 const intersects = this.raycaster.intersectObject(this.mesh, true);
                 if (intersects.length > 0 && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        this.isPainting = true;
+                        this.lastPaintY = clientY;
+                        this.downstrokeDelta = 0;
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                        this.showBrushPreview(clientX, clientY);
+                        this.updateCursor(true);
+                    } else {
                     const uv = intersects[0].uv;
                     const x = Math.floor(uv.x * this.canvasResolution);
                     const y = Math.floor((1 - uv.y) * this.canvasResolution);
@@ -606,11 +672,15 @@
                         this.isPainting = true;
                         this.lastPaintY = clientY;
                         this.downstrokeDelta = 0;
+                            if (this.orbitCamera && !this.isViewLocked) {
                         this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                            }
                         this.showBrushPreview(clientX, clientY);
+                            this.updateCursor(true);
                     }
                 }
-            }, { passive: false });
+                }
+            });
 
             sceneEl.addEventListener('touchmove', (e) => {
                 e.preventDefault();
@@ -626,17 +696,29 @@
                 const intersects = this.raycaster.intersectObject(this.mesh, true);
                 let overPaintable = false;
                 if (intersects.length > 0 && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        overPaintable = true;
+                        // Disable orbit controls when hovering over teeth in dryteeth state
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                    } else {
                     const uv = intersects[0].uv;
                     const x = Math.floor(uv.x * this.canvasResolution);
                     const y = Math.floor((1 - uv.y) * this.canvasResolution);
                     const idx = (y * this.canvasResolution + x) * 4;
                     if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
                         overPaintable = true;
+                        }
+                    }
+                } else {
+                    // Not hovering over teeth, enable orbit controls if not locked
+                    if (this.isDryTeethState && this.orbitCamera && !this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
                     }
                 }
                 if (this.isPainting) {
                     this.showBrushPreview(clientX, clientY);
-                    this.paintFromMouse(e);
                 } else if (overPaintable) {
                     this.showBrushPreview(clientX, clientY);
                 } else {
@@ -655,12 +737,25 @@
                 const intersects = this.raycaster.intersectObject(this.mesh, true);
                 let overPaintable = false;
                 if (intersects.length > 0 && intersects[0] && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        overPaintable = true;
+                        // Disable orbit controls when hovering over teeth in dryteeth state
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                    } else {
                     const uv = intersects[0].uv;
                     const x = Math.floor(uv.x * this.canvasResolution);
                     const y = Math.floor((1 - uv.y) * this.canvasResolution);
                     const idx = (y * this.canvasResolution + x) * 4;
                     if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
                         overPaintable = true;
+                        }
+                    }
+                } else {
+                    // Not hovering over teeth, enable orbit controls if not locked
+                    if (this.isDryTeethState && this.orbitCamera && !this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
                     }
                 }
                 if (this.isPainting) {
@@ -682,6 +777,16 @@
                 this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
                 const intersects = this.raycaster.intersectObject(this.mesh, true);
                 if (intersects.length > 0 && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        this.isPainting = true;
+                        this.lastPaintY = e.clientY;
+                        this.downstrokeDelta = 0;
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                        this.showBrushPreview(e.clientX, e.clientY);
+                        this.updateCursor(true);
+                    } else {
                     const uv = intersects[0].uv;
                     const x = Math.floor(uv.x * this.canvasResolution);
                     const y = Math.floor((1 - uv.y) * this.canvasResolution);
@@ -690,9 +795,12 @@
                         this.isPainting = true;
                         this.lastPaintY = e.clientY;
                         this.downstrokeDelta = 0;
+                            if (this.orbitCamera && !this.isViewLocked) {
                         this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                            }
                         this.showBrushPreview(e.clientX, e.clientY);
                         this.updateCursor(true);
+                        }
                     }
                 }
             });
@@ -712,7 +820,7 @@
             // Brush texture for fake normal effect
             this.useTextureBrush = true;
             this.brushTexture = new window.Image();
-            this.brushTexture.src = 'brush2.png';
+            this.brushTexture.src = 'fluoride-brush.png';
             this.brushPattern = null;
             this.brushTexture.onload = () => {
                 this.brushPattern = this.paintLayerCtx.createPattern(this.brushTexture, 'repeat');
@@ -732,6 +840,15 @@
                 scene.addEventListener('mousewheel', this.onZoom.bind(this));
                 scene.addEventListener('touchmove', this.onZoom.bind(this));
             }
+
+
+
+            // Optionally, increase renderer exposure for more vibrancy:
+            this.el.sceneEl.addEventListener('renderstart', () => {
+                if (this.el.sceneEl.renderer) {
+                    this.el.sceneEl.renderer.toneMappingExposure = 1.2;
+                }
+            });
         },
         onZoom: function(event) {
             // Set zooming flag
@@ -810,7 +927,7 @@
                     }
                 }
             });
-        },
+        }, 
         paintFromMouse: function(e) {
             if (!this.mesh || !this.maskData) return;
             const sceneEl = this.el.sceneEl;
@@ -827,24 +944,39 @@
                 // Only paint if mask is white here
                 const idx = (y * this.canvasResolution + x) * 4;
                 if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                    // Upstroke detection logic
+                    if (this.lastPaintY !== null) {
+                        const deltaY = e.clientY - this.lastPaintY;
+                        if (deltaY < 0) {
+                            this.upstrokeDelta += Math.abs(deltaY);
+                            this.downstrokeDelta = 0;
+                        } else {
+                            this.downstrokeDelta += deltaY;
+                            this.upstrokeDelta = 0;
+                        }
+                        // If upstroke exceeds threshold, show warning and prevent painting
+                        if (this.upstrokeDelta > this.upstrokeThreshold) {
+                            const now = Date.now();
+                            if (now - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                                window.dispatchEvent(new Event('invalid-paint-direction'));
+                                this.lastInvalidPaintEvent = now;
+                            }
+                            return; // Prevent painting on upstroke
+                        }
+                    }
+                    this.lastPaintY = e.clientY;
                     this.paintLayerCtx.save();
                     this.paintLayerCtx.beginPath();
                     this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
                     this.paintLayerCtx.closePath();
                     this.paintLayerCtx.clip();
-                    
                     if (this.isDryTeethState) {
                         // In dry teeth state, copy pixels from baseTexturePaint
-                        // Create a temporary canvas to handle the texture copying
                         const tempCanvas = document.createElement('canvas');
                         tempCanvas.width = this.canvasResolution;
                         tempCanvas.height = this.canvasResolution;
                         const tempCtx = tempCanvas.getContext('2d');
-                        
-                        // Draw the paint texture to the temp canvas
                         tempCtx.drawImage(this.paintImage, 0, 0, this.canvasResolution, this.canvasResolution);
-                        
-                        // Copy the relevant portion to the paint layer
                         this.paintLayerCtx.drawImage(
                             tempCanvas,
                             x - this.brushSize / 2,
@@ -857,34 +989,48 @@
                             this.brushSize
                         );
                     } else {
-                        // In paint teeth state, apply the paint as before
-                        if (this.brushPattern) {
-                            // Draw the texture
-                            this.paintLayerCtx.globalAlpha = 1.0;
-                            this.paintLayerCtx.fillStyle = this.brushPattern;
-                            this.paintLayerCtx.fillRect(
-                                x - this.brushSize / 2,
-                                y - this.brushSize / 2,
-                                this.brushSize,
-                                this.brushSize
-                            );
-                            // Overlay the color with some transparency
+                    if (this.brushPattern) {
+                        this.paintLayerCtx.globalAlpha = 1.0;
+                        this.paintLayerCtx.fillStyle = this.brushPattern;
+                        this.paintLayerCtx.fillRect(
+                            x - this.brushSize / 2,
+                            y - this.brushSize / 2,
+                            this.brushSize,
+                            this.brushSize
+                        );
                             this.paintLayerCtx.globalAlpha = 0.5;
-                            this.paintLayerCtx.fillStyle = this.brushColor;
-                            this.paintLayerCtx.beginPath();
-                            this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
-                            this.paintLayerCtx.fill();
+                        this.paintLayerCtx.fillStyle = this.brushColor;
+                        this.paintLayerCtx.beginPath();
+                        this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                        this.paintLayerCtx.fill();
                             this.paintLayerCtx.globalAlpha = 1.0;
-                        } else {
-                            this.paintLayerCtx.fillStyle = this.brushColor;
-                            this.paintLayerCtx.beginPath();
-                            this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
-                            this.paintLayerCtx.fill();
+                    } else {
+                        this.paintLayerCtx.fillStyle = this.brushColor;
+                        this.paintLayerCtx.beginPath();
+                        this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                        this.paintLayerCtx.fill();
                         }
                     }
                     this.paintLayerCtx.restore();
                     this.applyTexture();
                     this.coverageNeedsUpdate = true;
+                    // SFX for drying and painting dabs is temporarily disabled
+                    // if (typeof PlayAudioSFX === 'function') {
+                    //     let sfxId = null;
+                    //     if (this.isDryTeethState) {
+                    //         sfxId = '#SFX-drying';
+                    //     } else if (this.isPaintTeethState) {
+                    //         sfxId = '#SFX-painting';
+                    //     }
+                    //     if (sfxId) {
+                    //         const audioEl = document.querySelector(sfxId);
+                    //         if (audioEl) {
+                    //             const clone = audioEl.cloneNode();
+                    //             clone.volume = 0.5;
+                    //             clone.play().catch(() => {});
+                    //         }
+                    //     }
+                    // }
                 }
             }
         },
@@ -910,13 +1056,24 @@
             if (coverage >= 90) {
                 isComplete = true;
             }
-            if (coverage >= 99) {
+            if (coverage >= 98.5) {
                 autoComplete = true;
                 displayPercent = '100';
             }
             let percent = Math.max(0, Math.min(100, Number(displayPercent)));
-            if (autoComplete) {
-                percent = 100;
+            if (isComplete) {
+                if (typeof PlayAudioSFX === 'function' && !this.SFXPlayed90) {
+                    PlayAudioSFX('#SFX-90-percent');
+                    this.SFXPlayed90 = true;
+                }
+                if (autoComplete) {
+                    percent = 100;
+
+                    if (this.isDryTeethState) this.dryteeth = percent;
+                    if (this.isPaintTeethState) this.paintteeth = percent;
+                }
+            } else {
+                this.SFXPlayed90 = false;
             }
             // Update progress bar
             const coverageContainer = document.getElementById('coverageContainer');
@@ -934,7 +1091,7 @@
                 if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
                     const state = sequencer.getCurrentState();
                     coverageContainer.style.display = (state === 'dryteeth' || state === 'paintteeth') ? 'flex' : 'none';
-                } else {
+            } else {
                     coverageContainer.style.display = 'none';
                 }
                 
@@ -952,7 +1109,7 @@
             // Only trigger texture change once per state per completion
             if (autoComplete && !this._completionTriggered) {
                 this._completionTriggered = true;
-
+                if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-100-percent');
                 percent = 100;
                 document.querySelectorAll('.coverage-number').forEach(el => {
                     el.textContent = `${percent}%`;
@@ -989,6 +1146,7 @@
             
             // Set state based on texture IDs
             this.isDryTeethState = (baseTextureId === 'baseTextureDry');
+            this.isPaintTeethState = (baseTextureId === 'baseTexturePaint');
 
             // Load new base texture
             this.baseImage = document.getElementById(baseTextureId);
@@ -1043,11 +1201,7 @@
         if (warningTimeout) {
           clearTimeout(warningTimeout);
         }
-        warningDiv.style.display = 'block';
-        warningTimeout = setTimeout(() => {
-          warningDiv.style.display = 'none';
-          warningTimeout = null;
-        }, 3000);
+        showNotification('Only downstrokes are allowed.', 'is-danger is-light');
       });
     })();
 
@@ -1108,11 +1262,11 @@
             modal.style.display = 'none';
         });
         document.querySelectorAll('.top-left-general-instructions').forEach(box => {
-            box.style.display = 'block';
+            box.style.display = 'none';
             box.classList.remove('fade-in', 'fade-out');
         });
         document.querySelectorAll('.top-left-general-info i').forEach(icon => {
-            icon.className = 'fa-solid fa-xmark';
+            icon.className = 'fa-solid fa-question';
         });
 
         // 3. Reset all UI elements
@@ -1146,11 +1300,11 @@
         const notificationContainer = document.querySelector('.notification-container');
         if (notificationContainer) notificationContainer.classList.remove('is-active');
         // Reset view lock button
-        const lockViewBtn = document.getElementById('lockViewBtn');
-        if (lockViewBtn) {
-            lockViewBtn.textContent = 'Lock View';
-            lockViewBtn.style.background = '#4CAF50';
-        }
+        // const lockViewBtn = document.getElementById('lockViewBtn');
+        // if (lockViewBtn) {
+        //     lockViewBtn.textContent = 'Lock View';
+        //     lockViewBtn.style.background = '#4CAF50';
+        // }
         // Reset camera controls
         const camera = document.querySelector('[camera]');
         if (camera) {
@@ -1289,6 +1443,14 @@
         // Update sequencer to handle modal animations
         const originalNext = sequencer.next.bind(sequencer);
         sequencer.next = function() {
+            // Reset instruction boxes and icons on every state change
+            document.querySelectorAll('.top-left-general-instructions').forEach(box => {
+                box.style.display = 'none';
+                box.classList.remove('fade-in', 'fade-out');
+            });
+            document.querySelectorAll('.top-left-general-info i').forEach(icon => {
+                icon.className = 'fa-solid fa-question';
+            });
             // Close current modal if visible
             const currentState = this.getCurrentState();
             const currentModal = document.querySelector(`#${currentState}Screen .modal`);
@@ -1317,6 +1479,14 @@
 
         const originalSetState = sequencer.setState.bind(sequencer);
         sequencer.setState = function(state) {
+            // Reset instruction boxes and icons on every state change
+            document.querySelectorAll('.top-left-general-instructions').forEach(box => {
+                box.style.display = 'none';
+                box.classList.remove('fade-in', 'fade-out');
+            });
+            document.querySelectorAll('.top-left-general-info i').forEach(icon => {
+                icon.className = 'fa-solid fa-question';
+            });
             // Close current modal if visible
             const currentState = this.getCurrentState();
             const currentModal = document.querySelector(`#${currentState}Screen .modal`);
@@ -1470,8 +1640,20 @@
     });
 
     // Global SFX player function supporting multiple simultaneous SFX
-    window.PlayAudioSFX = function(url, fadeInMs = 100, fadeOutMs = 200) {
-        // Create a new audio element for each SFX
+    window.PlayAudioSFX = function(url, fadeInMs = 100, fadeOutMs = 200, volume = 1.0) {
+        // If url starts with #, treat as asset ID
+        if (url && url[0] === '#') {
+            const audioEl = document.querySelector(url);
+            if (audioEl) {
+                // Reset if already playing
+                audioEl.pause();
+                audioEl.currentTime = 0;
+                audioEl.volume = volume;
+                audioEl.play();
+                return;
+            }
+        }
+        // Fallback: create a new audio element for each SFX
         const audio = document.createElement('audio');
         audio.preload = 'auto';
         audio.src = url;
@@ -1488,17 +1670,17 @@
             const fadeInStep = 1 / (fadeInMs / 20);
             fadeInInterval = setInterval(() => {
                 t += fadeInStep;
-                audio.volume = Math.min(1, t);
-                if (audio.volume >= 1) {
+                audio.volume = Math.min(volume, t * volume);
+                if (audio.volume >= volume) {
                     clearInterval(fadeInInterval);
                 }
             }, 20);
             // Schedule fade out
             fadeOutTimeout = setTimeout(() => {
-                let v = 1;
+                let v = volume;
                 const fadeOutStep = 1 / (fadeOutMs / 20);
                 fadeOutInterval = setInterval(() => {
-                    v -= fadeOutStep;
+                    v -= fadeOutStep * volume;
                     audio.volume = Math.max(0, v);
                     if (audio.volume <= 0) {
                         clearInterval(fadeOutInterval);

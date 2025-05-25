@@ -8,6 +8,7 @@ class StateSequencer {
         this.paintteeth = 0;
         this.paintableComponent = null;
         const coverageLabel = document.getElementById('coverageLabel');
+        const nextButtonContainer = document.querySelector('.nextButtonContainer');
 
         this.states = {
             start: {
@@ -28,18 +29,20 @@ class StateSequencer {
                 next: 'paintteeth',
                 onEnter: () => {
                     console.log('[sequencer.js] Entering dryteeth state');
-                    this.showState('dryteeth');
-                    this.resetPainting();
                     coverageLabel.textContent = 'Teeth/gums dried:';
+                    nextButtonContainer.style.display = 'none';
+                    this.resetPainting();
+                    this.showState('dryteeth');
                 }
             },
             paintteeth: {
                 next: 'end',
                 onEnter: () => {
                     console.log('[sequencer.js] Entering paintteeth state');
-                    this.showState('paintteeth');
-                    this.resetPainting();
+                    nextButtonContainer.style.display = 'none';
                     coverageLabel.textContent = 'Fluoride varnish applied:';
+                    this.resetPainting();
+                    this.showState('paintteeth');
                 }
             },
             end: {
@@ -70,7 +73,7 @@ class StateSequencer {
     // Show/hide UI elements based on state
     showState(state) {
         console.log('[sequencer.js] App state changed to:', state);
-        
+        if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-state-transition');
         // Main screens
         document.getElementById('startScreen').style.display = (state === 'start') ? 'block' : 'none';
         document.getElementById('instructionsScreen').style.display = (state === 'instructions') ? 'block' : 'none';

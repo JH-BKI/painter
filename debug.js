@@ -75,13 +75,35 @@ function initDebug() {
                 console.log('Paint preview: hidden');
             }
         }
+        // Debug: skip to next sequence with ']' key
+        if (event.key === '/') {
+            const comp = document.querySelector('[paintable-texture]')?.components['paintable-texture'];
+            if (comp && typeof comp.calculateCoverage === 'function') {
+                // Fill the paint layer with opaque pixels in the mask area
+                if (comp.maskData && comp.paintLayerCtx) {
+                    const imgData = comp.paintLayerCtx.getImageData(0, 0, comp.canvasResolution, comp.canvasResolution);
+                    for (let i = 0; i < comp.maskData.data.length; i += 4) {
+                        if (
+                            comp.maskData.data[i] > 200 &&
+                            comp.maskData.data[i + 1] > 200 &&
+                            comp.maskData.data[i + 2] > 200
+                        ) {
+                            imgData.data[i + 3] = 255; // Set alpha to fully opaque
+                        }
+                    }
+                    comp.paintLayerCtx.putImageData(imgData, 0, 0);
+                }
+                comp.calculateCoverage();
+                console.log('Debug: Forced coverage to 100% and triggered calculation.');
+            }
+        }
     });
 
     // Create brush preview canvas
     const brushPreviewOverlay = document.createElement('canvas');
     brushPreviewOverlay.id = 'brushPreviewOverlay';
-    brushPreviewOverlay.width = 64;
-    brushPreviewOverlay.height = 64;
+    brushPreviewOverlay.width = 2048;
+    brushPreviewOverlay.height = 2048;
     brushPreviewOverlay.style.position = 'absolute';
     brushPreviewOverlay.style.pointerEvents = 'none';
     brushPreviewOverlay.style.zIndex = '10';
@@ -97,7 +119,7 @@ function initDebug() {
     const brushPreviewCtx = brushPreviewOverlay.getContext('2d');
     
     function drawBrushPreview() {
-        brushPreviewCtx.clearRect(0, 0, 64, 64);
+        brushPreviewCtx.clearRect(0, 0, 2048, 2048);
         brushPreviewCtx.beginPath();
         brushPreviewCtx.arc(
             32, 32,

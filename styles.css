@@ -17,6 +17,12 @@ a-scene {
   display: none !important;
 }
 
+
+.aframe-overlay {
+  position: relative;
+}
+
+
 /* Modal and animation styles */
 /* Scope Bulma's modal class to our app's modals only */
 .aframe-overlay .modal {
@@ -38,6 +44,7 @@ a-scene {
     left: 0;
     right: 0;
     bottom: 0;
+    pointer-events: none;
 }
 
 .aframe-overlay .modal-card {
@@ -217,25 +224,38 @@ div.top-left-general-instructions {
 }
 
 #lockViewBtn {
-    width: 128px;
-    padding: 8px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  position: fixed;
+  left: 1rem;
+  top: 6rem;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+#fullscreenBtn {
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 
 #zoomDisplay {
   text-align: center;
-  max-width: 100px;
-  width: 100%;
+  width: 100px;
   position: fixed;
   top: 50%;
-  left: 0;
+  left: 50%;
   margin: 1rem;
   font-size: 2rem;
   padding: 1rem 0.5rem;
+  background: rgba(255, 255, 255, 0.35);
+  margin-top: -50px;
+  margin-left: -50px;
+  pointer-events: none;
 }
 
 #zoomDisplay > span {
@@ -373,8 +393,11 @@ div.top-left-general-instructions {
 
 #coverageCheck
  {
-    position: absolute;
-    top: -144px;
+  position: absolute;
+  top: -154px;
+  background: #fff;
+  border-radius: 10rem;
+  padding: 0.4rem;
 }
 
 #coverageCheck > i{
@@ -398,4 +421,16 @@ div.top-left-general-instructions {
 
 .animate-once {
   animation: pulse-once 1s ease;
+}
+
+
+
+.tooltip.is-tooltip-active:not(.is-loading)::after, .tooltip:focus:not(.is-loading)::after, .tooltip:hover:not(.is-loading)::after {
+  margin-left: -.25rem;
+}
+
+
+.tooltip.is-tooltip-right.is-tooltip-active::before, .tooltip.is-tooltip-right:focus::before, .tooltip.is-tooltip-right:hover::before {
+ 
+  transform: translate(.75rem, 50%);
 }
