@@ -1,52 +1,197 @@
+/* AFrame specific */
 html, body, a-scene {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-  a-scene {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+a-scene {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.a-enter-vr-button {
+  display: none !important;
+}
+
+/* Modal and animation styles */
+/* Scope Bulma's modal class to our app's modals only */
+.aframe-overlay .modal {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 0;
-  }
-  .a-enter-vr-button {
-    display: none !important;
-  }
-  .aframe-overlay {
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px;
+}
+
+.aframe-overlay .modal-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.aframe-overlay .modal-card {
+    position: relative;
+    margin: auto;
+    display: block;
+    max-height: calc(100vh - 40px);
+    width: 100%;
+    max-width: 640px;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.aframe-overlay .modal.is-active .modal-card {
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+.aframe-overlay .modal.is-closing .modal-card {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+/* Override any Bulma styles that might interfere */
+.aframe-overlay .modal.is-active {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+.fade-out {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+.top-left-general-instructions {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Notification styles */
+.notification-container {
     position: fixed;
-    top: 50%;
+    top: 20px;
     left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    background: rgba(255,255,255,0.95);
-    padding: 16px 24px;
-    border-radius: 8px;
-    z-index: 20;
-    min-width: 320px;
-    max-width: 90vw;
-    text-align: center;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
-    pointer-events: auto;
-    display: none;
-  }
-  
-  #dryTeethOverlay.aframe-overlay, #paintTeethOverlay.aframe-overlay {
-    top: 100%;
-    transform: translateX(-50%) translateY(-120%);
-  }
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: auto;
+    max-width: 80%;
+    opacity: 0;
+    transform: translate(-50%, -20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification-container.is-active {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.notification-container .notification {
+    margin: 0;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.notification-content {
+    padding-right: 2rem;
+}
+
+/* Zoom display styles */
+#zoomDisplay {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#zoomDisplay.is-visible {
+    opacity: 1;
+}
+
+/* Bulma overrides */
+/* icons in buttons - shrink and pull right */
+.shared-with-icon > i {
+  float: right;
+  padding: 0.25rem 0 0 1rem;
+  font-size: 0.8em;
+} 
+
+#nextStateBtn.shared-with-icon > i {
+  padding: 0.6rem 0 0 1rem;
+} 
 
 
-  /* Overlay UI should be above the scene */
+/* add border radius to modal card that has no header*/
+.modal.no-header .modal-card{
+  border-radius: 16px;
+}
 
-  #aframeContainer > *, #startScreen > *, #instructionsScreen > *, #endScreen > *, #dryTeethOverlay > *, #paintTeethOverlay > * {
-    pointer-events: auto;
-  }
+li .block {
+  margin-bottom: 1rem;
+}
 
+.aframe-overlay.block-out{
+  z-index: 99;
+}
 
-/* Navigation bar */
-nav#navbarBottom {
-    background: rgba(255, 255, 255, 0.5);
+.aframe-overlay.annotate{
+  z-index: 1;
+}
+
+/* General info buttons and instruction panels */
+div.top-left-general-instructions {
+  position: fixed;
+  top: 1rem;
+  left: 5.5rem;
+  width: 50%;
+  max-width: 22rem;
+}
+
+.button.top-left-general-info {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+}
+
+/* Overlay UI should be above the scene */
+#aframeContainer > *, #startScreen > *, #instructionsScreen > *, #endScreen > *, #dryTeethOverlay > *, #paintTeethOverlay > * {
+  pointer-events: auto;
 }
 
 /* Stats panel */
@@ -57,7 +202,6 @@ nav#navbarBottom {
     bottom: 0 !important;
     z-index: 2000 !important;
 }
-
 
 /* A-Frame container */
 #aframeContainer {
@@ -83,13 +227,19 @@ nav#navbarBottom {
 }
 
 #zoomDisplay {
-    width: 128px;
-    margin-top: 10px;
-    padding: 8px;
-    background: rgba(226, 219, 219, 0.5);
-    color: black;
-    border: 2px solid black;
-    border-radius: 4px;
+  text-align: center;
+  max-width: 100px;
+  width: 100%;
+  position: fixed;
+  top: 50%;
+  left: 0;
+  margin: 1rem;
+  font-size: 2rem;
+  padding: 1rem 0.5rem;
+}
+
+#zoomDisplay > span {
+  font-size: 2rem;
 }
 
 #downstrokeWarning {
@@ -108,13 +258,6 @@ nav#navbarBottom {
     font-family: sans-serif;
 }
 
-#nextStateBtn {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    z-index: 2002;
-}
-
 #clearBtn {
     position: fixed;
     bottom: 32px;
@@ -129,4 +272,130 @@ nav#navbarBottom {
     pointer-events: none;
     z-index: 1001;
     display: none;
+}
+
+.coverage-bar-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 220px;
+  height: 32px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  z-index: 1002;
+}
+.coverage-bar {
+  height: 20px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #ff0000 0%, #ffff00 50%, #00ff00 100%);
+  width: 0%;
+  transition: width 0.3s;
+  margin-left: 6px;
+  margin-right: 6px;
+  flex: 1;
+}
+
+/* Coverage progress styles */
+.coverage-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2002;
+
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+
+    max-width: 20rem;
+    width: 100%;
+
+    pointer-events: none;
+}
+.coverage-container >div {
+  position: relative;
+  width: 100%;
+}
+
+.coverage-progress {
+    width: 100%;
+    height: 2rem;
+    appearance: none;
+    border: 1px solid #dcdcdc;
+    position: relative;
+    pointer-events: none;
+    margin: 0 !important;
+}
+
+.coverage-number {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 2003;
+  white-space: nowrap;
+  mix-blend-mode: difference;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.progress.is-success #coverageClip{
+  color: black;
+}
+
+.progress.is-primary {
+  --bulma-progress-value-background-color: #007ad1;
+}
+
+#coverageClip{
+    width: 100%;
+    z-index: 2004;
+    text-align: center;
+    color: white;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    mix-blend-mode: color-dodge;
+}
+
+.nextButtonContainer{
+    height: 5rem;
+    display: none;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+}
+
+#coverageCheck
+ {
+    position: absolute;
+    top: -144px;
+}
+
+#coverageCheck > i{
+  font-size: 4em;
+    --fa-beat-scale: 2.0;
+    color: #48c78e;
+}
+
+
+@keyframes pulse-once {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-once {
+  animation: pulse-once 1s ease;
 }
