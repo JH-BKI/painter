@@ -107,6 +107,7 @@ a-scene {
 .top-left-general-instructions {
     opacity: 0;
     transform: translateY(-10px);
+    overflow-y: auto;
 }
 
 /* Notification styles */
@@ -183,8 +184,8 @@ div.top-left-general-instructions {
   position: fixed;
   top: 1rem;
   left: 5.5rem;
-  width: 50%;
-  max-width: 22rem;
+  width: 55%;
+  max-width: 32rem;
 }
 
 .button.top-left-general-info {

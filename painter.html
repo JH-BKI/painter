@@ -43,19 +43,20 @@
             <audio id="SFX-state-transition" src="SFX-state-transition.mp3" preload="auto"></audio>
             <audio id="SFX-drying" src="SFX-drying.mp3" preload="auto"></audio>
             <audio id="SFX-painting" src="SFX-painting.mp3" preload="auto"></audio>
+            <!-- Preload GIFs for better UX -->
+            <img id="basic-controls-gif" src="basic-controls.gif" />
+            <img id="dryexample-gif" src="dryexample.gif" />
+            <img id="paintexample-gif" src="paintexample.gif" />
         
         </a-assets>
         <a-sky src="#sceneBg" rotation="0 -90 0"></a-sky>
+        <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
         <!-- Teeth and camera group, shown only in dryteeth/paintteeth states -->
         <a-entity id="teethGroup" visible="false">
-
-
-            
-                <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
-                <a-light type="directional" color="#fff" intensity="1.5" position="3.3 4 1.5"></a-light>
-                <a-light type="directional" color="#fff" intensity="1.5" position="-3.3 4 -1.5"></a-light>
-                <a-light type="directional" color="#fff" intensity="3.5" position="0 4 3.3"></a-light>
-            
+            <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
+            <a-light type="directional" color="#fff" intensity="1.5" position="3.3 4 1.5"></a-light>
+            <a-light type="directional" color="#fff" intensity="1.5" position="-3.3 4 -1.5"></a-light>
+            <a-light type="directional" color="#fff" intensity="3.5" position="0 4 3.3"></a-light>
             <a-entity gltf-model="#teethModel" paintable-texture position="0 1 0" scale="0.2 0.2 0.2"></a-entity>
             <a-entity camera look-controls="enabled: false" 
                 orbit-controls="target: 0 3 0; 
@@ -71,8 +72,7 @@
                                 enableDamping: true;
                                 dampingFactor: 0.025;
                                 enableRotate: true;
-                                enableZoom: true;">
-            </a-entity>
+                                enableZoom: true;"></a-entity>
         </a-entity>
     </a-scene>
 
@@ -89,10 +89,12 @@
                     </div>
         <div class="block">
                         <h1 class="is-size-3">Virtual Application of Fluoride Varnish</h1>
-        </div>
+              </div>
                     <div class="block">
                         <p>In this immersive simulation, you will practice the application of fluoride varnish on a set of virtual teeth.</p>
-    </div>
+                        <p>In step 1, we will dry the mouth and then apply the fluoride varnish in step 2.</p>
+                        <p>Select the <b><u>Continue</u></b> button below to start the simulation.</p>
+                 </div>
                 </section>
                 <footer class="modal-card-foot">
                     <div class="buttons">
@@ -108,62 +110,36 @@
             <div class="modal-background"></div>
             <div class="modal-card">
                 <section class="modal-card-body">
-        <div class="block">
-                        <h2 class="is-size-3">How to use this simulation</h2>
+                    <h2 class="is-size-3">How to use this simulation</h2>
+                    <div class="block">
+                        <p>This experience is compatible with desktop/laptop devices with a mouse/keyboard and mobile/tablet devices using the touchscreen.</p>
                     </div>
 
+                    <div class="column">                        
+                        <figure class="image is-16by9">
+                            <img src="basic-controls.gif" alt="basic controls demonstration" />
+                        </figure>
+                    </div>
                     <div class="columns is-desktop">
                         <div class="column">
                             <div class="block">
-                                <h3 class="is-size-4">Rotate/move teeth:</h3>
+                                <h5 class="is-size-5">Rotate/move teeth:</h5>
                                 <ul>
                                     <li><u>Mouse:</u> Hold down left mouse button and drag</li>
                                     <li><u>Touchscreen:</u> Touch and drag with your finger</li>
-        </ul>
-        </div>
-    </div>
-                        <div class="column">                        
-                            <figure class="image is-16by9">
-                                <img src="TBA" alt="Rotation demonstration" />
-                                <p><BR>Gif screenshot instructions here: TBA</p>
-                            </figure>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                    <div class="columns is-desktop">
                         <div class="column">
-        <div class="block">
-                                <h3 class="is-size-4">Zoom in/out:</h3>
+                            <div class="block">
+                                <h5 class="is-size-5">Zoom in/out:</h5>
                                 <ul>
                                     <li><u>Mouse:</u> Scroll up/down with the middle mousewheel</li>
                                     <li><u>Touchscreen:</u> Pinch in/out with your fingers</li>
                                 </ul>
-        </div>
-    </div>
-                        <div class="column">                        
-                            <figure class="image is-16by9">
-                                <img src="TBA" alt="Zoom demonstration" />
-                                <p><BR>Gif screenshot instructions here: TBA</p>
-                            </figure>
-                        </div>
+                            </div>
+                        </div>                        
                     </div>
-                    <div class="columns is-desktop">
-                        <div class="column">
-        <div class="block">
-                                <h3 class="is-size-4">Dry teeth/apply fluoride</h3><BR><small>(specified areas only)</small>
-                                <ul>
-                                    <li><u>Mouse:</u> Hold down left mouse button and drag on selected areas</li>
-                                    <li><u>Touchscreen:</u> Touch and drag with your finger on selected areas</li>
-                                </ul>
-        </div>
-                        </div>
-                        <div class="column">                        
-                            <figure class="image is-16by9">
-                                <img src="TBA" alt="Drying/Flouride Application demonstration" />
-                                <p><BR>Gif screenshot instructions here: TBA</p>
-                            </figure>
-                        </div>
-                    </div>
-                    <p>Let's move on to the first step: drying the teeth.</p>
                 </section>
                 <footer class="modal-card-foot">
                     <div class="buttons">
@@ -175,18 +151,27 @@
     </div>
 
     <div id="dryteeth" class="aframe-overlay annotate">  
-        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="dryteeth-instructions-toggle" aria-label="Toggle dry teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+
+        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="dryteeth-instructions-toggle" aria-label="Toggle dry teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;" ></i></button>
 
         <div class="box top-left-general-instructions" id="dryteeth-instructions">
             <h4 class="is-size-4">Step 1: Dry Teeth</h4>
-            <p>Dry the gums and teeth using the gauze.</p>
-            <p>Select the guaze below and use it to pat dry the areas in <span class="tag is-info is-normal">BLUE</span></p>
-            <p>Use the bar below to track your progress.</p><p>You must clear over 90% to continue.</p>
+            <p>Dry the gums and teeth by patting dry the areas in <span class="tag is-info is-normal">BLUE</span>. Use downstrokes only.</p>
+            <p>Use the bar below to track your progress. You must clear over 90% to continue.</p>
             <p>&nbsp;</p>
-            <hr>
-            <p>You can restart this step at anytime with the button below:</p>
-            <p>&nbsp;</p>
-            <button class="button is-warning shared-with-icon clearBtn" aria-label="Restart dry teeth step">Restart <i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>            
+            <div class="column">                        
+                <figure class="image is-16by9">
+                    <img src="dryexample.gif" alt="basic controls demonstration" />
+                </figure>
+            </div>
+            <div class="block">
+                <h5 class="is-size-5">Dry teeth - specified areas only</h5>
+                <ul>
+                    <li><u>Mouse:</u> Hold down left mouse button and drag on selected areas</li>
+                    <li><u>Touchscreen:</u> Touch and drag with your finger on selected areas</li>
+                </ul>
+            </div>
+            <p>&nbsp;</p>            
         </div>
     </div>
 
@@ -195,11 +180,22 @@
 
         <div class="box top-left-general-instructions" id="paintteeth-instructions">
             <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
-            <p>Apply the fluoride varnish using the brush.</p>
+            <p>Apply the fluoride varnish using the brush. Use downstrokes only.</p>    
+            <p>Apply the fuoride varnish on <b>all</b> teeth. Use the bar below to track your progress.</p>
+            <p>You must clear over 90% to continue.</p>
             <p>&nbsp;</p>
-            <p>Made a mistake? Clear your progress and restart this step with the button below:</p>
-            <p>&nbsp;</p>
-            <button class="button is-warning shared-with-icon clearBtn" aria-label="Restart paint teeth step">Restart <i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>            
+            <div class="column">                        
+                <figure class="image is-16by9">
+                    <img src="paintexample.gif" alt="basic controls demonstration" />
+                </figure>
+            </div>
+            <div class="block">
+                <h5 class="is-size-5">Apply varnish - specified areas only</h5>
+                <ul>
+                    <li><u>Mouse:</u> Hold down left mouse button and drag on selected areas</li>
+                    <li><u>Touchscreen:</u> Touch and drag with your finger on selected areas</li>
+                </ul>
+            </div>
         </div>    
     </div>
 
@@ -209,14 +205,20 @@
             <div class="modal-card">
                 <section class="modal-card-body">
                     <div class="block">
-                        <h2 class="is-size-3">Summary</h2>
+                        <h2 class="is-size-3">Simulation complete</h2>
                     </div>
                     <div class="block">
-                        <p>In this immersive simulation, you will practice the application of fluoride varnish on a set of virtual teeth.</p>
+                        <p>Your summary:</p>
                     </div>
         <div class="block">
-        <p>Dry Teeth Coverage: <span id="dryteethResult">0</span>%</p>
-        <p>Paint Teeth Coverage: <span id="paintteethResult">0</span>%</p>
+            <h4 class="is-size-4">Step 1: Dry Teeth</h4>
+            <p>Teeth/gums dried: <b><span id="dryteethResult">0</span>%</b></p>
+            <hr>
+        </div>
+        <div class="block">
+            <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
+            <p>Fluoride varnish applied: <b><span id="paintteethResult">0</span>%</b></p>
+            <hr>
         </div>
         <div class="block">
                         <p>Start the simulation again with the <b>Restart</b> button below.</p>
@@ -366,7 +368,7 @@
                 // Update button icon
                 const icon = button.querySelector('i');
                 if (icon) {
-                    icon.className = isVisible ? 'fa-solid fa-question' : 'fa-solid fa-xmark';
+                    icon.className = isVisible ? 'fa-solid fa-question fa-beat' : 'fa-solid fa-xmark';
                 }
             };
 
@@ -401,7 +403,7 @@
                                     instructionBox.removeEventListener('animationend', handler);
                                 }, { once: true });
                                 if (icon) {
-                                    icon.className = 'fa-solid fa-question';
+                                    icon.className = 'fa-solid fa-question fa-beat';
                                 }
                             }
                             autoHideTimeout = null;
@@ -582,7 +584,6 @@
                 if (this.coverageNeedsUpdate) {
                     this.calculateCoverage();
                     this.coverageNeedsUpdate = false;
-                    console.log('Coverage updated to: ', coverage);
                 }
             }, 250);
 
@@ -642,6 +643,8 @@
             // Touch painting support
             const sceneEl = this.el.sceneEl;
             sceneEl.addEventListener('touchstart', (e) => {
+                console.log('touchstart', e);
+                console.log('isDryTeethState:', this.isDryTeethState);
                 e.preventDefault();
                 const touch = e.touches[0];
                 if (!touch) return;
@@ -663,26 +666,30 @@
                         }
                         this.showBrushPreview(clientX, clientY);
                         this.updateCursor(true);
+                        console.log('Set isPainting:', this.isPainting);
                     } else {
-                    const uv = intersects[0].uv;
-                    const x = Math.floor(uv.x * this.canvasResolution);
-                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
-                    const idx = (y * this.canvasResolution + x) * 4;
-                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
-                        this.isPainting = true;
-                        this.lastPaintY = clientY;
-                        this.downstrokeDelta = 0;
+                        const uv = intersects[0].uv;
+                        const x = Math.floor(uv.x * this.canvasResolution);
+                        const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                        const idx = (y * this.canvasResolution + x) * 4;
+                        if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                            this.isPainting = true;
+                            this.lastPaintY = clientY;
+                            this.downstrokeDelta = 0;
                             if (this.orbitCamera && !this.isViewLocked) {
-                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                                this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
                             }
-                        this.showBrushPreview(clientX, clientY);
+                            this.showBrushPreview(clientX, clientY);
                             this.updateCursor(true);
+                            console.log('Set isPainting:', this.isPainting);
+                        }
                     }
                 }
-                }
-            });
+            }, { passive: false });
 
             sceneEl.addEventListener('touchmove', (e) => {
+                console.log('touchmove', e);
+                console.log('touchmove, isPainting:', this.isPainting);
                 e.preventDefault();
                 const touch = e.touches[0];
                 if (!touch) return;
@@ -703,12 +710,12 @@
                             this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
                         }
                     } else {
-                    const uv = intersects[0].uv;
-                    const x = Math.floor(uv.x * this.canvasResolution);
-                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
-                    const idx = (y * this.canvasResolution + x) * 4;
-                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
-                        overPaintable = true;
+                        const uv = intersects[0].uv;
+                        const x = Math.floor(uv.x * this.canvasResolution);
+                        const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                        const idx = (y * this.canvasResolution + x) * 4;
+                        if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                            overPaintable = true;
                         }
                     }
                 } else {
@@ -719,6 +726,8 @@
                 }
                 if (this.isPainting) {
                     this.showBrushPreview(clientX, clientY);
+                    // Call paintFromMouse with a fake event
+                    this.paintFromMouse({ clientX, clientY });
                 } else if (overPaintable) {
                     this.showBrushPreview(clientX, clientY);
                 } else {
@@ -851,20 +860,24 @@
             });
         },
         onZoom: function(event) {
-            // Set zooming flag
             this.isZooming = true;
-            
-            // Clear any existing timeout
+
+            // If it's a touch event, only show zoom panel for pinch
+            if (event.touches) {
+                if (event.touches.length >= 2) {
+                    if (this.zoomContainer) this.zoomContainer.classList.add('is-visible');
+                } else {
+                    if (this.zoomContainer) this.zoomContainer.classList.remove('is-visible');
+                }
+            } else {
+                // Mouse wheel or other event: always show zoom panel
+                if (this.zoomContainer) this.zoomContainer.classList.add('is-visible');
+            }
+
             if (this.zoomTimeout) {
                 clearTimeout(this.zoomTimeout);
             }
 
-            // Show zoom display
-            if (this.zoomContainer) {
-                this.zoomContainer.classList.add('is-visible');
-            }
-
-            // Set timeout to hide zoom display
             this.zoomTimeout = setTimeout(() => {
                 if (this.zoomContainer) {
                     this.zoomContainer.classList.remove('is-visible');
@@ -1063,7 +1076,7 @@
             let percent = Math.max(0, Math.min(100, Number(displayPercent)));
             if (isComplete) {
                 if (typeof PlayAudioSFX === 'function' && !this.SFXPlayed90) {
-                    PlayAudioSFX('#SFX-90-percent');
+                    PlayAudioSFX('#SFX-90-percent',100,100,0.25);
                     this.SFXPlayed90 = true;
                 }
                 if (autoComplete) {
@@ -1109,7 +1122,7 @@
             // Only trigger texture change once per state per completion
             if (autoComplete && !this._completionTriggered) {
                 this._completionTriggered = true;
-                if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-100-percent');
+                if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-100-percent',100,100,0.25);
                 percent = 100;
                 document.querySelectorAll('.coverage-number').forEach(el => {
                     el.textContent = `${percent}%`;
@@ -1141,10 +1154,12 @@
             }
         },
         changeTextures: function(baseTextureId, maskTextureId) {
+            console.log('changeTextures called with:', baseTextureId, maskTextureId);
             // Clear existing paint
             this.paintLayerCtx.clearRect(0, 0, this.canvasResolution, this.canvasResolution);
             
             // Set state based on texture IDs
+            console.log('Setting isDryTeethState:', (baseTextureId === 'baseTextureDry'));
             this.isDryTeethState = (baseTextureId === 'baseTextureDry');
             this.isPaintTeethState = (baseTextureId === 'baseTexturePaint');
 
@@ -1266,7 +1281,7 @@
             box.classList.remove('fade-in', 'fade-out');
         });
         document.querySelectorAll('.top-left-general-info i').forEach(icon => {
-            icon.className = 'fa-solid fa-question';
+            icon.className = 'fa-solid fa-question fa-beat';
         });
 
         // 3. Reset all UI elements
@@ -1449,7 +1464,7 @@
                 box.classList.remove('fade-in', 'fade-out');
             });
             document.querySelectorAll('.top-left-general-info i').forEach(icon => {
-                icon.className = 'fa-solid fa-question';
+                icon.className = 'fa-solid fa-question fa-beat';
             });
             // Close current modal if visible
             const currentState = this.getCurrentState();
@@ -1485,7 +1500,7 @@
                 box.classList.remove('fade-in', 'fade-out');
             });
             document.querySelectorAll('.top-left-general-info i').forEach(icon => {
-                icon.className = 'fa-solid fa-question';
+                icon.className = 'fa-solid fa-question fa-beat';
             });
             // Close current modal if visible
             const currentState = this.getCurrentState();
@@ -1719,6 +1734,115 @@
 
       element.style.clipPath = clipPathValue;
     };
+
+    // Gauze interactivity
+    const gauze = document.getElementById('gauzeRoll');
+    const scene = document.querySelector('a-scene');
+    let gauzeActive = false;
+    let isDryingState = false;
+    // Track latest pointer position (on window for component access)
+    window.gauzeActive = false;
+    window.isDryingState = false;
+    window.latestPointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    window.addEventListener('mousemove', function(evt) {
+        window.latestPointer.x = evt.clientX;
+        window.latestPointer.y = evt.clientY;
+    });
+    window.addEventListener('touchmove', function(evt) {
+        if (evt.touches && evt.touches[0]) {
+            window.latestPointer.x = evt.touches[0].clientX;
+            window.latestPointer.y = evt.touches[0].clientY;
+        }
+    });
+
+    // Show/hide gauze based on state
+    const updateGauzeVisibility = () => {
+        if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
+            const state = sequencer.getCurrentState();
+            window.isDryingState = (state === 'dryteeth');
+            if (gauze) gauze.setAttribute('visible', window.isDryingState);
+        }
+    };
+    // Listen for state changes
+    const originalShowState = sequencer.showState.bind(sequencer);
+    sequencer.showState = function(state) {
+        originalShowState(state);
+        updateGauzeVisibility();
+    };
+    updateGauzeVisibility();
+
+    // Mouse/touch events using A-Frame click
+    if (gauze) {
+        gauze.addEventListener('click', function (evt) {
+            console.log('Gauze clicked!', evt);
+            if (!window.isDryingState) return;
+            window.gauzeActive = true;
+        });
+        window.addEventListener('mouseup', function () {
+            window.gauzeActive = false;
+        });
+        window.addEventListener('touchend', function () {
+            window.gauzeActive = false;
+        });
+        // Add tick function to move gauze every frame if active
+        gauze.setAttribute('tick', '');
+        gauze.tick = function () {
+            if (window.gauzeActive && window.isDryingState) {
+                const scene = document.querySelector('a-scene');
+                const camera = scene.camera;
+                if (!camera) return;
+                const mouse = {
+                    x: (window.latestPointer.x / window.innerWidth) * 2 - 1,
+                    y: -(window.latestPointer.y / window.innerHeight) * 2 + 1
+                };
+                const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+                this.object3D.position.copy(vector);
+            }
+        };
+    }
+    // Move gauze with mouse/touch if active
+    scene.addEventListener('mousemove', function (evt) {
+        if (!window.gauzeActive || !window.isDryingState) return;
+        const mouse = { x: (evt.clientX / window.innerWidth) * 2 - 1, y: -(evt.clientY / window.innerHeight) * 2 + 1 };
+        const camera = scene.camera;
+        if (!camera) return;
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+        gauze.object3D.position.copy(vector);
+    });
+    scene.addEventListener('touchmove', function (evt) {
+        if (!window.gauzeActive || !window.isDryingState) return;
+        const touch = evt.touches[0];
+        const mouse = { x: (touch.clientX / window.innerWidth) * 2 - 1, y: -(touch.clientY / window.innerHeight) * 2 + 1 };
+        const camera = scene.camera;
+        if (!camera) return;
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+        gauze.object3D.position.copy(vector);
+    });
+
+    // Register the instrument-follow component (robust version)
+    AFRAME.registerComponent('instrument-follow', {
+      tick: function () {
+        // Always log for debug
+        // console.log('instrument-follow tick always running');
+        if (window.gauzeActive && window.isDryingState) {
+          // Get the camera entity and its THREE.Camera
+          const cameraEl = document.querySelector('[camera]');
+          if (!cameraEl) return;
+          const camera = cameraEl.getObject3D('camera');
+          if (!camera) return;
+
+          // Convert screen coords to normalized device coords
+          const mouse = {
+            x: (window.latestPointer.x / window.innerWidth) * 2 - 1,
+            y: -(window.latestPointer.y / window.innerHeight) * 2 + 1
+          };
+
+          // Project to a point 2 units in front of the camera
+          const vector = new THREE.Vector3(mouse.x, mouse.y, -1).unproject(camera);
+          this.el.object3D.position.copy(vector);
+        }
+      }
+    });
     </script>
 </body>
 </html>

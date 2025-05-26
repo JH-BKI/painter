@@ -73,7 +73,7 @@ class StateSequencer {
     // Show/hide UI elements based on state
     showState(state) {
         console.log('[sequencer.js] App state changed to:', state);
-        if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-state-transition');
+        if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-state-transition',100,100,0.1);
         // Main screens
         document.getElementById('startScreen').style.display = (state === 'start') ? 'block' : 'none';
         document.getElementById('instructionsScreen').style.display = (state === 'instructions') ? 'block' : 'none';
