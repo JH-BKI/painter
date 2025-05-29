@@ -154,7 +154,7 @@
 
     <div id="dryteeth" class="aframe-overlay annotate">  
 
-        <button class="button is-medium is-link top-left-general-info" data-balloon-pos="right" aria-label="Show instructions" id="dryteeth-instructions-toggle"><i class="fa-solid fa-xmark" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;" ></i></button>
+        <button class="button is-medium is-link top-left-general-info overlay-buttons" data-balloon-pos="right" aria-label="Show instructions" id="dryteeth-instructions-toggle"><i class="fa-solid fa-xmark" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;" ></i></button>
 
         <div class="box top-left-general-instructions" id="dryteeth-instructions">
             <h4 class="is-size-4">Step 1: Dry Teeth</h4>
@@ -178,7 +178,7 @@
     </div>
 
     <div id="paintteeth" class="aframe-overlay annotate">  
-        <button class="button is-medium is-link top-left-general-info" data-balloon-pos="right" aria-label="Show instructions" id="paintteeth-instructions-toggle"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <button class="button is-medium is-link top-left-general-info overlay-buttons" data-balloon-pos="right" aria-label="Show instructions" id="paintteeth-instructions-toggle"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
         <div class="box top-left-general-instructions" id="paintteeth-instructions">
             <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
@@ -238,12 +238,12 @@
     <!-- Overlay UI: Only for dryteeth/paintteeth states -->
     <div id="aframeContainer">
         <div class="aframe-topright">
-            <button class="button is-medium is-success" data-balloon-pos="right" aria-label="Viewport lock is OFF" id="lockViewBtn">
+            <button class="button is-medium is-success overlay-buttons" data-balloon-pos="right" aria-label="Viewport lock" id="lockViewBtn">
                 <i class="fa-solid fa-lock lock-view"  aria-hidden="true" style="display:none;"></i>
                 <i class="fa-solid fa-lock-open unlock-view"  aria-hidden="true" style="display:block;"></i>
             </button>
 
-            <button class="button is-medium is-link" data-balloon-pos="left" aria-label="Window view enabled" id="fullscreenBtn">
+            <button class="button is-medium is-link overlay-buttons" data-balloon-pos="left" aria-label="Fullscreen view" id="fullscreenBtn">
                 <i class="fa-solid fa-compress minimise-view"  aria-hidden="true" style="display:none;"></i>
                 <i class="fa-solid fa-expand maximise-view"  aria-hidden="true" style="display:block;"></i>
             </button>
@@ -1163,7 +1163,7 @@
                             if (isTopRow && deltaY < -tolerance) {
                                 // Upstroke on top row (should be downstroke)
                                 if (Date.now() - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
-                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'dryteeth' } }));
+                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'paintteeth' } }));
                                     this.lastInvalidPaintEvent = Date.now();
                                 }
                                 return; // Block painting
@@ -1263,7 +1263,7 @@
                             if (isTopRow && deltaY < -tolerance) {
                                 // Upstroke on top row (should be downstroke)
                                 if (Date.now() - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
-                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'dryteeth' } }));
+                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'paintteeth' } }));
                                     this.lastInvalidPaintEvent = Date.now();
                                 }
                                 return; // Block painting
