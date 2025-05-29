@@ -108,6 +108,39 @@ function initDebug() {
                 console.log('Debug: paintableComponent not found');
             }
         }
+        // Debug: apply stroke map mask to teeth with 't' key
+        if (event.key.toLowerCase() === 't') {
+            const comp = document.querySelector('[paintable-texture]')?.components['paintable-texture'];
+            if (comp) {
+                const maskImg = document.getElementById('paintStrokeMap');
+                if (maskImg) {
+                    comp.paintCtx.clearRect(0, 0, comp.canvasResolution, comp.canvasResolution);
+                    comp.paintCtx.drawImage(maskImg, 0, 0, comp.canvasResolution, comp.canvasResolution);
+                    comp.texture.needsUpdate = true;
+                    // Set on all mesh materials
+                    if (comp.mesh) {
+                        comp.mesh.traverse(obj => {
+                            if (obj.isMesh && obj.material) {
+                                if (Array.isArray(obj.material)) {
+                                    obj.material.forEach(mat => {
+                                        mat.map = comp.texture;
+                                        mat.needsUpdate = true;
+                                    });
+                                } else {
+                                    obj.material.map = comp.texture;
+                                    obj.material.needsUpdate = true;
+                                }
+                            }
+                        });
+                    }
+                    console.log('Debug: Applied stroke map mask to teeth.');
+                } else {
+                    console.warn('Debug: paintStrokeMap image not found.');
+                }
+            } else {
+                console.warn('Debug: paintable-texture component not found.');
+            }
+        }
     });
 
     // Create brush preview canvas

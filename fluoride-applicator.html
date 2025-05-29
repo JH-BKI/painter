@@ -47,6 +47,8 @@
             <img id="basic-controls-gif" src="./assets/images/basic-controls.gif" />
             <img id="dryexample-gif" src="./assets/images/dryexample.gif" />
             <img id="paintexample-gif" src="./assets/images/paintexample.gif" />
+            <!-- Stroke direction mask for paintteeth -->
+            <img id="paintStrokeMap" src="./assets/3d/paint-mask-paint-strokemap.png" alt="Stroke direction mask for paintteeth">
         
         </a-assets>
         <a-sky src="#sceneBg" rotation="0 -90 0"></a-sky>
@@ -277,7 +279,7 @@
 
     <script>
 
-    let version = 'v0.75.16';
+    let version = 'v0.99.20250530:1359';
     // App state management
     let appState = 'start';
     let dryteeth = 0;
@@ -578,23 +580,15 @@
                 if (state === 'paintteeth' && paintableComponent) {
                     paintableComponent.calculateCoverage();
                 }
-                // Update summary values when entering end state
-                if (state === 'end' && paintableComponent) {
-                    console.log('[Summary] setState block entered. paintableComponent:', paintableComponent, 'dryteeth:', paintableComponent.dryteeth, 'paintteeth:', paintableComponent.paintteeth);
-                    let dry = paintableComponent.dryteethAutoComplete ? 100 : Math.round(paintableComponent.dryteeth || 0);
-                    let paint = paintableComponent.paintteethAutoComplete ? 100 : Math.round(paintableComponent.paintteeth || 0);
-                    const dryteethResult = document.getElementById('dryteethResult');
-                    if (dryteethResult) dryteethResult.textContent = dry;
-                    const paintteethResult = document.getElementById('paintteethResult');
-                    if (paintteethResult) paintteethResult.textContent = paint;
-                    console.log('[Summary] Setting summary: dryteeth =', dry, 'paintteeth =', paint, 'raw:', paintableComponent.dryteeth, paintableComponent.paintteeth);
-                    console.log('[Summary] DOM updated: dryteethResult:', dryteethResult && dryteethResult.textContent, 'paintteethResult:', paintteethResult && paintteethResult.textContent);
-                    if (state === 'end') {
-                        if (!paintableComponent) {
-                            console.error('[Summary] paintableComponent is missing in setState for end state!');
-                        }
-                    }
-                }
+                // // Update summary values when entering end state
+                // if (state === 'end' && paintableComponent) {
+                //     let dry = paintableComponent.dryteethAutoComplete ? 100 : Math.round(paintableComponent.dryteeth || 0);
+                //     let paint = paintableComponent.paintteethAutoComplete ? 100 : Math.round(paintableComponent.paintteeth || 0);
+                //     const dryteethResult = document.getElementById('dryteethResult');
+                //     if (dryteethResult) dryteethResult.textContent = dry;
+                //     const paintteethResult = document.getElementById('paintteethResult');
+                //     if (paintteethResult) paintteethResult.textContent = paint;
+                // }
             }
             return result;
         };
@@ -1008,6 +1002,22 @@
                     this.el.sceneEl.renderer.toneMappingExposure = 1.2;
                 }
             });
+
+            // Load the stroke map
+            this.strokeMapImage = document.getElementById('paintStrokeMap');
+            this.strokeMapCanvas = document.createElement('canvas');
+            this.strokeMapCanvas.width = this.canvasResolution;
+            this.strokeMapCanvas.height = this.canvasResolution;
+            this.strokeMapCtx = this.strokeMapCanvas.getContext('2d');
+            if (this.strokeMapImage.complete) {
+                this.strokeMapCtx.drawImage(this.strokeMapImage, 0, 0, this.canvasResolution, this.canvasResolution);
+                this.strokeMapData = this.strokeMapCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
+            } else {
+                this.strokeMapImage.onload = () => {
+                    this.strokeMapCtx.drawImage(this.strokeMapImage, 0, 0, this.canvasResolution, this.canvasResolution);
+                    this.strokeMapData = this.strokeMapCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
+                };
+            }
         },
         onZoom: function(event) {
             this.isZooming = true;
@@ -1092,6 +1102,28 @@
             });
         }, 
         paintFromMouse: function(e) {
+            // Block upstrokes in dryteeth state before any painting logic
+            if (this.isDryTeethState) {
+                if (this.forceDownstrokes && this.lastPaintY !== null) {
+                    const deltaY = e.clientY - this.lastPaintY;
+                    if (deltaY < 0) {
+                        this.upstrokeDelta += Math.abs(deltaY);
+                        this.downstrokeDelta = 0;
+                    } else {
+                        this.downstrokeDelta += deltaY;
+                        this.upstrokeDelta = 0;
+                    }
+                    if (this.upstrokeDelta > this.upstrokeThreshold) {
+                        const now = Date.now();
+                        if (now - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                            window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'dryteeth' } }));
+                            this.lastInvalidPaintEvent = now;
+                        }
+                        return; // Prevent painting on upstroke
+                    }
+                }
+                this.lastPaintY = e.clientY;
+            }
             if (!this.mesh || !this.maskData) return;
             const sceneEl = this.el.sceneEl;
             const canvas = sceneEl.renderer.domElement;
@@ -1107,24 +1139,43 @@
                 // Only paint if mask is white here
                 const idx = (y * this.canvasResolution + x) * 4;
                 if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
-                    // Upstroke detection logic (only if forceDownstrokes is true)
-                    if (this.forceDownstrokes && this.lastPaintY !== null) {
-                        const deltaY = e.clientY - this.lastPaintY;
-                        if (deltaY < 0) {
-                            this.upstrokeDelta += Math.abs(deltaY);
-                            this.downstrokeDelta = 0;
+                    // Check stroke direction based on row
+                    if (this.isPaintTeethState && this.strokeMapData) {
+                        // Get center pixel color from stroke map
+                        const idx = (y * this.canvasResolution + x) * 4;
+                        const r = this.strokeMapData.data[idx];
+                        const g = this.strokeMapData.data[idx+1];
+                        const b = this.strokeMapData.data[idx+2];
+                        // Blue = top row, Red = bottom row
+                        const isTopRow = (r === 0 && g === 0 && b === 255);
+                        const isBottomRow = (r === 255 && g === 0 && b === 0);
+                        if (isTopRow) {
+                            console.log('[paintable-texture] Painting: Top row');
+                        } else if (isBottomRow) {
+                            console.log('[paintable-texture] Painting: Bottom row');
                         } else {
-                            this.downstrokeDelta += deltaY;
-                            this.upstrokeDelta = 0;
+                            console.log('[paintable-texture] Painting: Neither row');
                         }
-                        // If upstroke exceeds threshold, show warning and prevent painting
-                        if (this.upstrokeDelta > this.upstrokeThreshold) {
-                            const now = Date.now();
-                            if (now - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
-                                window.dispatchEvent(new Event('invalid-paint-direction'));
-                                this.lastInvalidPaintEvent = now;
+                        // Calculate stroke direction
+                        if (this.lastPaintY !== null) {
+                            const deltaY = e.clientY - this.lastPaintY;
+                        const tolerance = 0; // px, allow a little horizontal movement
+                            if (isTopRow && deltaY < -tolerance) {
+                                // Upstroke on top row (should be downstroke)
+                                if (Date.now() - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'dryteeth' } }));
+                                    this.lastInvalidPaintEvent = Date.now();
+                                }
+                                return; // Block painting
                             }
-                            return; // Prevent painting on upstroke
+                            if (isBottomRow && deltaY > tolerance) {
+                                // Downstroke on bottom row (should be upstroke)
+                                if (Date.now() - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'paintteeth' } }));
+                                    this.lastInvalidPaintEvent = Date.now();
+                                }
+                                return; // Block painting
+                            }
                         }
                     }
                     this.lastPaintY = e.clientY;
@@ -1194,11 +1245,48 @@
                     //         }
                     //     }
                     // }
+
+                    // Check stroke direction
+                    if (this.isPaintTeethState && this.strokeMapData) {
+                        // Get center pixel color from stroke map
+                        const idx = (y * this.canvasResolution + x) * 4;
+                        const r = this.strokeMapData.data[idx];
+                        const g = this.strokeMapData.data[idx+1];
+                        const b = this.strokeMapData.data[idx+2];
+                        // Blue = top row, Red = bottom row
+                        const isTopRow = (r === 0 && g === 0 && b === 255);
+                        const isBottomRow = (r === 255 && g === 0 && b === 0);
+                        // Calculate stroke direction
+                        if (this.lastPaintY !== null) {
+                            const deltaY = e.clientY - this.lastPaintY;
+                            const tolerance = 0; // px, allow a little horizontal movement
+                            if (isTopRow && deltaY < -tolerance) {
+                                // Upstroke on top row (should be downstroke)
+                                if (Date.now() - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'dryteeth' } }));
+                                    this.lastInvalidPaintEvent = Date.now();
+                                }
+                                return; // Block painting
+                            }
+                            if (isBottomRow && deltaY > tolerance) {
+                                // Downstroke on bottom row (should be upstroke)
+                                if (Date.now() - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                                    window.dispatchEvent(new CustomEvent('invalid-paint-direction', { detail: { state: 'paintteeth' } }));
+                                    this.lastInvalidPaintEvent = Date.now();
+                                }
+                                return; // Block painting
+                            }
+                        }
+                    }
                 }
             }
         },
         calculateCoverage: function() {
-            console.log('[Coverage] calculateCoverage called. State:', this.isDryTeethState ? 'dryteeth' : (this.isPaintTeethState ? 'paintteeth' : 'unknown'));
+
+            const dryteethResult = document.getElementById('dryteethResult');
+            const paintteethResult = document.getElementById('paintteethResult');
+
+            //console.log('[Coverage] calculateCoverage called. State:', this.isDryTeethState ? 'dryteeth' : (this.isPaintTeethState ? 'paintteeth' : 'unknown'));
             if (!this.maskData) return;
             const paintData = this.paintLayerCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
             let paintableCount = 0;
@@ -1236,9 +1324,18 @@
             let percent = Math.max(0, Math.min(100, Number(displayPercent)));
 
             // Always update the state variables with the current percent
-            if (this.isDryTeethState) this.dryteeth = percent;
-            if (this.isPaintTeethState) this.paintteeth = percent;
-            console.log('[Coverage] Updated percent:', percent, 'dryteeth:', this.dryteeth, 'paintteeth:', this.paintteeth);
+            if (this.isDryTeethState) {
+                this.dryteeth = percent; 
+                dryteethResult.textContent = this.dryteeth;
+                //console.log('[Coverage] dryteeth Updated percent:', this.dryteeth); 
+            }
+            if (this.isPaintTeethState) {
+                this.paintteeth = percent; 
+                paintteethResult.textContent = this.paintteeth;
+                //console.log('[Coverage] paintteeth Updated percent:', this.paintteeth); 
+            }    
+
+            //console.log('[Coverage] Updated percent:', percent, 'dryteeth:', this.dryteeth, 'paintteeth:', this.paintteeth);
 
             if (isComplete) {
                 if (typeof PlayAudioSFX === 'function' && !this.SFXPlayed90) {
@@ -1248,21 +1345,16 @@
                 if (autoComplete) {
                     percent = 100;
                     if (this.isDryTeethState) {
-                        this.dryteeth = 100;
+                        this.dryteeth = percent;
+                        console.log('[Coverage] dryteeth Updated percent AUTOCOMPLETE:', this.dryteeth);
                         this.dryteethAutoComplete = true;
-                    }
-                    if (this.isPaintTeethState) {
-                        this.paintteeth = 100;
-                        this.paintteethAutoComplete = true;
-                    }
-                    // Update summary values immediately
-                    if (this.isDryTeethState) {
-                        const dryteethResult = document.getElementById('dryteethResult');
                         if (dryteethResult) dryteethResult.textContent = '100';
                         console.log('[Coverage] Auto-complete: dryteeth set to 100, dryteethResult updated to 100');
                     }
                     if (this.isPaintTeethState) {
-                        const paintteethResult = document.getElementById('paintteethResult');
+                        this.paintteeth = percent;
+                        console.log('[Coverage] paintteeth Updated percent AUTOCOMPLETE:', this.paintteeth);
+                        this.paintteethAutoComplete = true;
                         if (paintteethResult) paintteethResult.textContent = '100';
                         console.log('[Coverage] Auto-complete: paintteeth set to 100, paintteethResult updated to 100');
                     }
@@ -1287,7 +1379,7 @@
                 if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
                     const state = sequencer.getCurrentState();
                     coverageContainer.style.display = (state === 'dryteeth' || state === 'paintteeth') ? 'flex' : 'none';
-            } else {
+                } else {
                     coverageContainer.style.display = 'none';
                 }
                 
@@ -1306,10 +1398,9 @@
             if (autoComplete && !this._completionTriggered) {
                 this._completionTriggered = true;
                 if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-100-percent',100,100,0.25);
-                percent = 100;
                 document.querySelectorAll('.coverage-number').forEach(el => {
-                    el.textContent = `${percent}%`;
-                    updatePolygonClipPath(document.querySelector('#coverageClip'), percent);
+                    el.textContent = `100%`;
+                    updatePolygonClipPath(document.querySelector('#coverageClip'), 100);
                 });
                 if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
                     const state = sequencer.getCurrentState();
@@ -1395,11 +1486,15 @@
     (function() {
       let warningTimeout = null;
       const warningDiv = document.getElementById('downstrokeWarning');
-      window.addEventListener('invalid-paint-direction', function() {
-        if (warningTimeout) {
-          clearTimeout(warningTimeout);
+      window.addEventListener('invalid-paint-direction', function(e) {
+        if (warningTimeout) clearTimeout(warningTimeout);
+        if (e.detail && e.detail.state === 'dryteeth') {
+          showNotification('Only downstrokes are allowed.', 'is-danger is-light');
+        } else if (e.detail && e.detail.state === 'paintteeth') {
+          showNotification('Use downstrokes for the top row and upstrokes for the bottom row.', 'is-danger is-light');
+        } else {
+          showNotification('Invalid stroke direction.', 'is-danger is-light');
         }
-        showNotification('Only downstrokes are allowed.', 'is-danger is-light');
       });
     })();
 
