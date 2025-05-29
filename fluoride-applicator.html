@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Virtual simulation for practicing fluoride varnish application on teeth">
+    <meta name="keywords" content="fluoride varnish, dental simulation, virtual training, teeth">
+    <title>Fluoride Varnish Applicator</title>
+    <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
+    <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
+    <script src="./core/js/sequencer.js"></script>
+
+    <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
+  <link rel="stylesheet" href="./core/css/pkg/bulma-tooltip.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
+    <link rel="stylesheet" href="./core/css/styles.css">
+</head>
+<body>
+    <!-- Add notification container -->
+    <div class="notification-container" role="alert" aria-live="polite">
+        <div class="notification">
+            <button class="delete" aria-label="Close notification"></button>
+            <div class="notification-content"></div>
+        </div>
+    </div>
+
+    <!-- A-Frame Scene: Sky is always visible -->
+    <a-scene embedded vr-mode-ui="enabled: false">
+        <a-assets>
+            <a-asset-item id="teethModel" src="./assets/3d/Dientes.glb"></a-asset-item>
+            <!-- Base textures -->
+            <img id="baseTextureDry" src="./assets/3d/base-dry.png" alt="Base texture for dry teeth">
+            <img id="baseTexturePaint" src="./assets/3d/base-paint.png" alt="Base texture for painted teeth">
+            <!-- Mask textures -->
+            <img id="maskTextureDry" src="./assets/3d/paint-mask-dry.png" alt="Mask texture for dry teeth">
+            <img id="maskTexturePaint" src="./assets/3d/paint-mask-paint.png" alt="Mask texture for painted teeth">
+            <img id="baseTextureDryComplete" src="./assets/3d/dryteeth-complete.png" alt="Dry teeth complete texture">
+            <img id="baseTexturePaintComplete" src="./assets/3d/paintteeth-complete.png" alt="Paint teeth complete texture">
+            <!-- audio -->
+            <audio id="SFX-100-percent" src="./assets/sfx/SFX-100-percent.mp3" preload="auto"></audio>
+            <audio id="SFX-90-percent" src="./assets/sfx/SFX-90-percent.mp3" preload="auto"></audio>
+            <audio id="SFX-state-transition" src="./assets/sfx/SFX-state-transition.mp3" preload="auto"></audio>
+            <audio id="SFX-drying" src="./assets/sfx/SFX-drying.mp3" preload="auto"></audio>
+            <audio id="SFX-painting" src="./assets/sfx/SFX-painting.mp3" preload="auto"></audio>
+            <!-- Preload GIFs for better UX -->
+            <img id="sceneBg" src="./assets/images/scene-background.jpg" alt="Scene background">
+            <img id="basic-controls-gif" src="./assets/images/basic-controls.gif" />
+            <img id="dryexample-gif" src="./assets/images/dryexample.gif" />
+            <img id="paintexample-gif" src="./assets/images/paintexample.gif" />
+        
+        </a-assets>
+        <a-sky src="#sceneBg" rotation="0 -90 0"></a-sky>
+        <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
+        <!-- Teeth and camera group, shown only in dryteeth/paintteeth states -->
+        <a-entity id="teethGroup" visible="false">
+            <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
+            <a-light type="directional" color="#fff" intensity="1.5" position="3.3 4 1.5"></a-light>
+            <a-light type="directional" color="#fff" intensity="1.5" position="-3.3 4 -1.5"></a-light>
+            <a-light type="directional" color="#fff" intensity="3.5" position="0 4 3.3"></a-light>
+            <a-entity gltf-model="#teethModel" paintable-texture position="0 1 0" scale="0.2 0.2 0.2"></a-entity>
+            <a-entity camera look-controls="enabled: false" 
+                orbit-controls="target: 0 3 0; 
+                                minPolarAngle: 75;  
+                                maxPolarAngle: 95;
+                                maxAzimuthAngle: 85; 
+                                minAzimuthAngle: -85; 
+                                minDistance: 2.5; 
+                                maxDistance: 3.5; 
+                                initialPosition: 0 3 3.5; 
+                                rotateSpeed: 0.2; 
+                                enablePan: false;
+                                enableDamping: true;
+                                dampingFactor: 0.025;
+                                enableRotate: true;
+                                enableZoom: true;"></a-entity>
+        </a-entity>
+    </a-scene>
+
+    <!-- Overlay UI: App State Screens -->
+    <div id="startScreen" class="aframe-overlay block-out">
+        <div class="modal no-header is-active">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <section class="modal-card-body">
+                    <div class="block">
+        <figure class="image is-16by9">
+                            <img src="./assets/images/splash.jpg" alt="Application splash screen" />
+          </figure>
+                    </div>
+        <div class="block">
+                        <h1 class="is-size-3">Virtual Application of Fluoride Varnish</h1>
+              </div>
+                    <div class="block">
+                        <p>In this immersive simulation, you will practice the application of fluoride varnish on a set of virtual teeth.</p>
+                        <p>In step 1, we will dry the mouth and then apply the fluoride varnish in step 2.</p>
+                        <p>Select the <b><u>Continue</u></b> button below to start the simulation.</p>
+                 </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-medium is-link shared-with-icon" id="toInstructions" aria-label="Continue to instructions">Continue <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <div id="instructionsScreen" class="aframe-overlay block-out">
+        <div class="modal no-header is-active">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <section class="modal-card-body">
+                    <h2 class="is-size-3">How to use this simulation</h2>
+                    <div class="block">
+                        <p>This experience is compatible with desktop/laptop devices with a mouse/keyboard and mobile/tablet devices using the touchscreen.</p>
+                    </div>
+
+                    <div class="column">                        
+                        <figure class="image is-16by9">
+                            <img src="./assets/images/basic-controls.gif" alt="basic controls demonstration" />
+                        </figure>
+                    </div>
+                    <div class="columns is-desktop">
+                        <div class="column">
+                            <div class="block">
+                                <h5 class="is-size-5">Rotate/move teeth:</h5>
+                                <ul>
+                                    <li><u>Mouse:</u> Hold down left mouse button and drag</li>
+                                    <li><u>Touchscreen:</u> Touch and drag with your finger</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="block">
+                                <h5 class="is-size-5">Zoom in/out:</h5>
+                                <ul>
+                                    <li><u>Mouse:</u> Scroll up/down with the middle mousewheel</li>
+                                    <li><u>Touchscreen:</u> Pinch in/out with your fingers</li>
+                                </ul>
+                            </div>
+                        </div>                        
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-medium is-link shared-with-icon" id="toDryTeeth" aria-label="Continue to dry teeth step">Continue <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                </footer>
+            </div>
+        </div>        
+    </div>
+
+    <div id="dryteeth" class="aframe-overlay annotate">  
+
+        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="dryteeth-instructions-toggle" aria-label="Toggle dry teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;" ></i></button>
+
+        <div class="box top-left-general-instructions" id="dryteeth-instructions">
+            <h4 class="is-size-4">Step 1: Dry Teeth</h4>
+            <p>Dry the gums and teeth by patting dry the areas in <span class="tag is-info is-normal">BLUE</span>. Use downstrokes only.</p>
+            <p>Use the bar below to track your progress. You must clear over 90% to continue.</p>
+            <p>&nbsp;</p>
+            <div class="column">                        
+                <figure class="image is-16by9">
+                    <img src="./assets/images/dryexample.gif" alt="basic controls demonstration" />
+                </figure>
+            </div>
+            <div class="block">
+                <h5 class="is-size-5">Dry teeth - specified areas only</h5>
+                <ul>
+                    <li><u>Mouse:</u> Hold down left mouse button and drag on selected areas</li>
+                    <li><u>Touchscreen:</u> Touch and drag with your finger on selected areas</li>
+                </ul>
+            </div>
+            <p>&nbsp;</p>            
+        </div>
+    </div>
+
+    <div id="paintteeth" class="aframe-overlay annotate">  
+        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="paintteeth-instructions-toggle" aria-label="Toggle paint teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+
+        <div class="box top-left-general-instructions" id="paintteeth-instructions">
+            <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
+            <p>Apply the fluoride varnish using the brush. Use downstrokes only.</p>    
+            <p>Apply the fuoride varnish on <b>all</b> teeth. Use the bar below to track your progress.</p>
+            <p>You must clear over 90% to continue.</p>
+            <p>&nbsp;</p>
+            <div class="column">                        
+                <figure class="image is-16by9">
+                    <img src="./assets/images/paintexample.gif" alt="basic controls demonstration" />
+                </figure>
+            </div>
+            <div class="block">
+                <h5 class="is-size-5">Apply varnish - specified areas only</h5>
+                <ul>
+                    <li><u>Mouse:</u> Hold down left mouse button and drag on selected areas</li>
+                    <li><u>Touchscreen:</u> Touch and drag with your finger on selected areas</li>
+                </ul>
+            </div>
+        </div>    
+    </div>
+
+    <div id="endScreen" class="aframe-overlay block-out">
+        <div class="modal no-header is-active">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <section class="modal-card-body">
+                    <div class="block">
+                        <h2 class="is-size-3">Simulation complete</h2>
+                    </div>
+                    <div class="block">
+                        <p>Your summary:</p>
+                    </div>
+        <div class="block">
+            <h4 class="is-size-4">Step 1: Dry Teeth</h4>
+            <p>Teeth/gums dried: <b><span id="dryteethResult">0</span>%</b></p>
+            <hr>
+        </div>
+        <div class="block">
+            <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
+            <p>Fluoride varnish applied: <b><span id="paintteethResult">0</span>%</b></p>
+            <hr>
+        </div>
+        <div class="block">
+                        <p>Start the simulation again with the <b>Restart</b> button below.</p>
+        </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-medium is-link shared-with-icon" id="restartApp" aria-label="Restart simulation">Restart <i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay UI: Only for dryteeth/paintteeth states -->
+    <div id="aframeContainer">
+        <div class="aframe-topright">
+            <button class="button is-medium is-success tooltip is-tooltip-right" data-tooltip="Viewport lock is OFF" id="lockViewBtn" aria-label="Lock/unlock view">
+                <i class="fa-solid fa-lock lock-view"  aria-hidden="true" style="display:none;"></i>
+                <i class="fa-solid fa-lock-open unlock-view"  aria-hidden="true" style="display:block;"></i>
+            </button>
+
+            <button class="button is-medium is-link tooltip is-tooltip-left" data-tooltip="Window view enabled" id="fullscreenBtn" aria-label="Fullscreen view">
+                <i class="fa-solid fa-compress minimise-view"  aria-hidden="true" style="display:none;"></i>
+                <i class="fa-solid fa-expand maximise-view"  aria-hidden="true" style="display:block;"></i>
+            </button>
+
+            <div id="zoomDisplay" class="box" role="status" aria-live="polite">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><BR><span id="zoomValue">0%</span>
+            </div>
+        </div>
+
+        
+        <!-- Coverage Progress Bar -->
+        <div id="coverageContainer" class="box coverage-container is-flex-direction-column is-justify-content-center" style="display:none;" role="status" aria-live="polite">
+            <b><span id="coverageLabel" class="coverage-label"></span></b>
+            <div class="coverageContainer-inner">
+                <progress class="progress is-primary coverage-progress" id="coverageProgress" value="0" max="100" aria-label="progress"></progress>
+                
+                     <span id="coverageNumber" class="coverage-number">0%</span>
+                     <span id="coverageClip" class="coverage-number">0%</span>                    
+        </div>
+            <div class="nextButtonContainer" style="display:none;">
+                <button id="nextStateBtn" class="button is-medium is-link shared-with-icon" aria-label="Proceed to next step">Continue <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                <span id="coverageCheck" ><i class="fa-solid fa-circle-check animate-once"></i></span>
+            </div>    
+        </div>    
+    </div>
+    <!-- Brush preview overlay -->
+    <canvas id="brushPreviewOverlay" aria-hidden="true"></canvas>
+
+    <!-- SFX Player (hidden) -->
+    <a-entity id="sfxPlayer" style="display:none;">
+        <audio id="sfxAudio" preload="auto"></audio>
+    </a-entity>
+
+    <script>
+
+    let version = 'v0.75.16';
+    // App state management
+    let appState = 'start';
+    let dryteeth = 0;
+    let paintteeth = 0;
+    let currentCoverage = 0;
+    let paintableComponent = null;
+
+    // Initialize the sequencer
+    console.log('[painter.html] Initializing sequencer');
+    const sequencer = new StateSequencer();
+    
+    // Update button handlers to use sequencer with error handling
+    const toInstructionsBtn = document.getElementById('toInstructions');
+    const toDryTeethBtn = document.getElementById('toDryTeeth');
+    const nextStateBtn = document.getElementById('nextStateBtn');
+    const restartAppBtn = document.getElementById('restartApp');
+
+    if (toInstructionsBtn) {
+        toInstructionsBtn.onclick = () => sequencer.next();
+    } else {
+        console.error('toInstructions button not found');
+    }
+
+    if (toDryTeethBtn) {
+        toDryTeethBtn.onclick = () => sequencer.next();
+    } else {
+        console.error('toDryTeeth button not found');
+    }
+
+    if (nextStateBtn) {
+        nextStateBtn.onclick = () => sequencer.next();
+    } else {
+        console.error('nextStateBtn button not found');
+    }
+
+    if (restartAppBtn) {
+        restartAppBtn.onclick = () => { sequencer.setState('start'); };
+    } else {
+        console.error('restartApp button not found');
+    }
+
+    // Handle instruction box toggles with error handling
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('[AutoHide] DOMContentLoaded handler running');
+        const infoButtons = document.querySelectorAll('.top-left-general-info');
+        console.log('[AutoHide] Found', infoButtons.length, '.top-left-general-info buttons');
+        infoButtons.forEach(button => {
+            if (!button) {
+                console.error('Toggle button not found');
+                return;
+            }
+
+            // Attach MutationObserver to the instruction box
+            const overlay = button.closest('.aframe-overlay');
+            const instructionBox = overlay && overlay.querySelector('.top-left-general-instructions');
+            if (instructionBox) {
+                const observer = new MutationObserver((mutationsList) => {
+                    for (const mutation of mutationsList) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                            const display = instructionBox.style.display;
+                            console.log('[AutoHide][MutationObserver] Instruction box display changed to:', display, 'Stack:', new Error().stack);
+                        }
+                    }
+                });
+                observer.observe(instructionBox, { attributes: true, attributeFilter: ['style'] });
+            }
+
+            let autoHideTimeout;
+            
+            const clearAutoHideTimer = () => {
+                if (autoHideTimeout) {
+                    console.log('[AutoHide] Clearing existing timer');
+                    clearTimeout(autoHideTimeout);
+                    autoHideTimeout = null;
+                }
+            };
+
+            const toggleInstructions = () => {
+                const overlay = button.closest('.aframe-overlay');
+                if (!overlay) {
+                    console.error('Overlay not found for button');
+                    return;
+                }
+
+                const instructionBox = overlay.querySelector('.top-left-general-instructions');
+                if (!instructionBox) {
+                    console.error('Instruction box not found');
+                    return;
+                }
+                
+                const isVisible = instructionBox.style.display !== 'none';
+                console.log('[AutoHide] User toggled. isVisible:', isVisible, 'display:', instructionBox.style.display, 'classList:', instructionBox.classList.value);
+                
+                const icon = button.querySelector('i');
+                if (isVisible) {
+                    // Fade out
+                    console.log('[AutoHide] User toggled: fade out');
+                    instructionBox.classList.remove('fade-in');
+                    instructionBox.classList.add('fade-out');
+                    instructionBox.addEventListener('animationend', function handler() {
+                        instructionBox.style.display = 'none';
+                        instructionBox.removeEventListener('animationend', handler);
+                        console.log('[AutoHide] User toggled: box hidden (animationend)');
+                        // Always set icon to question when hidden
+                        if (icon) icon.className = 'fa-solid fa-question fa-beat';
+                    }, { once: true });
+                } else {
+                    // Fade in
+                    console.log('[AutoHide] User toggled: fade in');
+                    instructionBox.style.display = 'block';
+                    instructionBox.classList.remove('fade-out');
+                    instructionBox.classList.add('fade-in');
+                    console.log('[AutoHide] User toggled: box shown (fade-in)');
+                    // Always set icon to X when shown
+                    if (icon) icon.className = 'fa-solid fa-xmark';
+                }
+            };
+
+            // Set up auto-hide timeout
+            const setupAutoHide = () => {
+                // Clear any existing timeout
+                clearAutoHideTimer();
+                
+                // Only start timer if we're in dryteeth or paintteeth state and parent is visible
+                const currentState = sequencer.getCurrentState();
+                const overlay = button.closest('.aframe-overlay');
+                if ((currentState === 'dryteeth' || currentState === 'paintteeth') && overlay && overlay.style.display !== 'none') {
+                    const instructionBox = overlay.querySelector('.top-left-general-instructions');
+                    if (instructionBox) {
+                        console.log('[AutoHide] State change: force show and start timer (parent visible)');
+                        instructionBox.style.display = 'block';
+                        instructionBox.classList.remove('fade-out');
+                        instructionBox.classList.add('fade-in');
+                        const icon = button.querySelector('i');
+                        if (icon) icon.className = 'fa-solid fa-xmark';
+                        // Start new timer
+                        autoHideTimeout = setTimeout(() => {
+                            if (instructionBox && instructionBox.style.display !== 'none') {
+                                console.log('[AutoHide] Timer expired: fade out. display:', instructionBox.style.display, 'classList:', instructionBox.classList.value);
+                                instructionBox.classList.remove('fade-in');
+                                instructionBox.classList.add('fade-out');
+                                instructionBox.addEventListener('animationend', function handler() {
+                                    instructionBox.style.display = 'none';
+                                    instructionBox.removeEventListener('animationend', handler);
+                                    console.log('[AutoHide] Timer expired: box hidden (animationend)');
+                                    const icon = button.querySelector('i');
+                                    if (icon) icon.className = 'fa-solid fa-question fa-beat';
+                                }, { once: true });
+                            }
+                            autoHideTimeout = null;
+                        }, 7000);
+                        console.log('[AutoHide] Timer set for 7000ms');
+                    }
+                } else {
+                    console.log('[AutoHide] setupAutoHide: parent not visible, skipping show/reset');
+                }
+            };
+
+            // Add click handler
+            button.addEventListener('click', () => {
+                clearAutoHideTimer();
+                toggleInstructions();
+            });
+
+            // Store the setupAutoHide function on the button for later use
+            button.setupAutoHide = setupAutoHide;
+        });
+
+        // Handle all modals
+        document.querySelectorAll('.modal').forEach(modal => {
+            // Add close animation before hiding
+            const closeModal = () => {
+                modal.classList.remove('is-active');
+                modal.classList.add('is-closing');
+                modal.addEventListener('animationend', function handler() {
+                    modal.style.display = 'none';
+                    modal.classList.remove('is-closing');
+                    modal.removeEventListener('animationend', handler);
+                }, { once: true });
+            };
+
+            // Add open animation when showing
+            const openModal = () => {
+                modal.style.display = 'block';
+                modal.classList.add('is-active');
+            };
+
+            // Handle modal background clicks
+            const modalBackground = modal.querySelector('.modal-background');
+            if (modalBackground) {
+                modalBackground.addEventListener('click', closeModal);
+            }
+
+            // Handle close button clicks
+            const closeButton = modal.querySelector('.modal-close');
+            if (closeButton) {
+                closeButton.addEventListener('click', closeModal);
+            }
+
+            // Initial state
+            if (modal.classList.contains('is-active')) {
+                openModal();
+            }
+        });
+
+        // Update sequencer to handle modal animations and instruction boxes
+        const originalNext = sequencer.next.bind(sequencer);
+        sequencer.next = function() {
+            // Texture logic
+            const currentState = this.getCurrentState();
+            const currentIndex = ['start', 'instructions', 'dryteeth', 'paintteeth', 'end'].indexOf(currentState);
+            const nextState = ['start', 'instructions', 'dryteeth', 'paintteeth', 'end'][currentIndex + 1];
+            const paintableComponent = document.querySelector('[paintable-texture]')?.components['paintable-texture'];
+            if (paintableComponent) {
+                if (nextState === 'dryteeth') {
+                    paintableComponent.changeTextures('baseTextureDry', 'maskTextureDry');
+                } else if (nextState === 'paintteeth') {
+                    paintableComponent.changeTextures('baseTexturePaint', 'maskTexturePaint');
+                }
+            }
+
+            // Modal logic
+            const currentModal = document.querySelector(`#${currentState}Screen .modal`);
+            if (currentModal && currentModal.classList.contains('is-active')) {
+                currentModal.classList.remove('is-active');
+                currentModal.classList.add('is-closing');
+                currentModal.addEventListener('animationend', function handler() {
+                    currentModal.style.display = 'none';
+                    currentModal.classList.remove('is-closing');
+                    currentModal.removeEventListener('animationend', handler);
+                }, { once: true });
+            }
+
+            const result = originalNext();
+            if (result) {
+                // Show new modal
+                const newState = this.getCurrentState();
+                const nextModal = document.querySelector(`#${newState}Screen .modal`);
+                if (nextModal) {
+                    nextModal.style.display = 'block';
+                    nextModal.classList.add('is-active');
+                }
+                // Instruction box auto-hide (only if entering dryteeth/paintteeth)
+                if (newState === 'dryteeth' || newState === 'paintteeth') {
+                    console.log('[AutoHide] sequencer.next: calling setupAutoHide for all info buttons. New state:', newState);
+                    document.querySelectorAll('.top-left-general-info').forEach(button => {
+                        if (button.setupAutoHide) button.setupAutoHide();
+                    });
+                }
+            }
+            return result;
+        };
+
+        const originalSetState = sequencer.setState.bind(sequencer);
+        sequencer.setState = function(state) {
+            // Always use the sequencer's paintableComponent property
+            const paintableComponent = sequencer.paintableComponent;
+            console.log('[setState override] called with state:', state, 'paintableComponent:', paintableComponent);
+            // // Texture logic
+            // const paintableComponent = document.querySelector('[paintable-texture]')?.components['paintable-texture'];
+            if (paintableComponent) {
+                if (state === 'dryteeth') {
+                    paintableComponent.changeTextures('baseTextureDry', 'maskTextureDry');
+                } else if (state === 'paintteeth') {
+                    paintableComponent.changeTextures('baseTexturePaint', 'maskTexturePaint');
+                }
+            }
+
+            // Modal logic
+            const currentState = this.getCurrentState();
+            const currentModal = document.querySelector(`#${currentState}Screen .modal`);
+            if (currentModal && currentModal.classList.contains('is-active')) {
+                currentModal.classList.remove('is-active');
+                currentModal.classList.add('is-closing');
+                currentModal.addEventListener('animationend', function handler() {
+                    currentModal.style.display = 'none';
+                    currentModal.classList.remove('is-closing');
+                    currentModal.removeEventListener('animationend', handler);
+                }, { once: true });
+            }
+
+            const result = originalSetState(state);
+            if (result) {
+                // Show new modal
+                const nextModal = document.querySelector(`#${state}Screen .modal`);
+                if (nextModal) {
+                    nextModal.style.display = 'block';
+                    nextModal.classList.add('is-active');
+                }
+                // Instruction box auto-hide (only if entering dryteeth/paintteeth)
+                if (state === 'dryteeth' || state === 'paintteeth') {
+                    console.log('[AutoHide] sequencer.setState: calling setupAutoHide for all info buttons. New state:', state);
+                    document.querySelectorAll('.top-left-general-info').forEach(button => {
+                        if (button.setupAutoHide) button.setupAutoHide();
+                    });
+                }
+                // Ensure paintteeth coverage is initialized when entering paintteeth state
+                if (state === 'paintteeth' && paintableComponent) {
+                    paintableComponent.calculateCoverage();
+                }
+                // Update summary values when entering end state
+                if (state === 'end' && paintableComponent) {
+                    console.log('[Summary] setState block entered. paintableComponent:', paintableComponent, 'dryteeth:', paintableComponent.dryteeth, 'paintteeth:', paintableComponent.paintteeth);
+                    let dry = paintableComponent.dryteethAutoComplete ? 100 : Math.round(paintableComponent.dryteeth || 0);
+                    let paint = paintableComponent.paintteethAutoComplete ? 100 : Math.round(paintableComponent.paintteeth || 0);
+                    const dryteethResult = document.getElementById('dryteethResult');
+                    if (dryteethResult) dryteethResult.textContent = dry;
+                    const paintteethResult = document.getElementById('paintteethResult');
+                    if (paintteethResult) paintteethResult.textContent = paint;
+                    console.log('[Summary] Setting summary: dryteeth =', dry, 'paintteeth =', paint, 'raw:', paintableComponent.dryteeth, paintableComponent.paintteeth);
+                    console.log('[Summary] DOM updated: dryteethResult:', dryteethResult && dryteethResult.textContent, 'paintteethResult:', paintteethResult && paintteethResult.textContent);
+                    if (state === 'end') {
+                        if (!paintableComponent) {
+                            console.error('[Summary] paintableComponent is missing in setState for end state!');
+                        }
+                    }
+                }
+            }
+            return result;
+        };
+    });
+
+    // Wait for A-Frame to be ready to get the paintable component
+    document.addEventListener('DOMContentLoaded', () => {
+        const scene = document.querySelector('a-scene');
+        if (scene) {
+            scene.addEventListener('loaded', () => {
+                const paintableElement = document.querySelector('[paintable-texture]');
+                if (paintableElement && paintableElement.components['paintable-texture']) {
+                    sequencer.setPaintableComponent(paintableElement.components['paintable-texture']);
+                } else {
+                    console.error('Paintable component not found');
+                }
+            });
+        } else {
+            console.error('A-Frame scene not found');
+        }
+    });
+
+    // Initial state
+    console.log('[painter.html] Setting initial state');
+    sequencer.setState('start');
+
+    AFRAME.registerComponent('paintable-texture', {
+        init: function () {
+            this.brushSize = 15;
+            this.brushColor = '#d4c788';
+            this.brushPreviewFudge = 20;
+            this.isPainting = false;
+            this.mouse = new THREE.Vector2();
+            this.raycaster = new THREE.Raycaster();
+            this.paintablePixels = 0;
+            this.paintedPixels = 0;
+            this.forceDownstrokes = true;
+            this.lastPaintY = null;
+            this.downstrokeThreshold = 10;
+            this.downstrokeDelta = 0;
+            this.upstrokeThreshold = 15;
+            this.upstrokeDelta = 0;
+            this.lastInvalidPaintEvent = 0;
+            this.invalidPaintCooldown = 5000;
+            this.isDryTeethState = false;  // Track if we're in dry teeth state
+            this.isPaintTeethState = false; // Track if we're in paint teeth state
+            this.SFXPlayed90 = false;
+            
+
+
+            // Lowered canvas resolution for performance
+            this.canvasResolution = 512;
+            // Paint layer (user paint only, transparent by default)
+            this.paintLayerCanvas = document.createElement('canvas');
+            this.paintLayerCanvas.width = this.canvasResolution;
+            this.paintLayerCanvas.height = this.canvasResolution;
+            this.paintLayerCtx = this.paintLayerCanvas.getContext('2d', { alpha: true, willReadFrequently: true });
+            this.paintLayerCtx.clearRect(0, 0, this.canvasResolution, this.canvasResolution);
+            this.paintLayerCtx.fillStyle = 'rgba(0,0,0,0)';
+            this.paintLayerCtx.fillRect(0, 0, this.canvasResolution, this.canvasResolution);
+
+            // Composite canvas (for rendering: base + paint)
+            this.paintCanvas = document.createElement('canvas');
+            this.paintCanvas.width = this.canvasResolution;
+            this.paintCanvas.height = this.canvasResolution;
+            this.paintCtx = this.paintCanvas.getContext('2d', { alpha: true });
+            this.paintCtx.clearRect(0, 0, this.canvasResolution, this.canvasResolution);
+            this.paintCtx.fillStyle = 'rgba(0,0,0,0)';
+            this.paintCtx.fillRect(0, 0, this.canvasResolution, this.canvasResolution);
+
+            // Mask
+            this.maskCanvas = document.createElement('canvas');
+            this.maskCanvas.width = this.canvasResolution;
+            this.maskCanvas.height = this.canvasResolution;
+            this.maskCtx = this.maskCanvas.getContext('2d', { willReadFrequently: true });
+
+            // Texture
+            this.texture = new THREE.CanvasTexture(this.paintCanvas);
+            this.texture.encoding = THREE.sRGBEncoding;
+            
+            this.lockViewBtn = document.getElementById('lockViewBtn');
+            this.orbitCamera = document.querySelector('[camera]');
+            this.isViewLocked = false;
+
+            if (this.lockViewBtn && this.orbitCamera) {
+                this.lockViewBtn.addEventListener('click', () => {
+                    this.isViewLocked = !this.isViewLocked;
+                    const lockIcon = this.lockViewBtn.querySelector('.lock-view');
+                    const unlockIcon = this.lockViewBtn.querySelector('.unlock-view');
+                    if (this.isViewLocked) {
+                        showNotification('The viewport is locked, movement is restricted.', 'is-danger is-light');
+                        if (lockIcon) lockIcon.style.display = 'block';
+                        if (unlockIcon) unlockIcon.style.display = 'none';
+                        lockViewBtn.setAttribute("data-tooltip","Viewport lock is ON");
+                        lockViewBtn.classList.remove('is-success');
+                        lockViewBtn.classList.add('is-danger');
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                    } else {
+                        showNotification('Viewport unlocked, movement is now active.');
+                        if (lockIcon) lockIcon.style.display = 'none';
+                        if (unlockIcon) unlockIcon.style.display = 'block';
+                        lockViewBtn.setAttribute("data-tooltip","Viewport lock is OFF");
+                        lockViewBtn.classList.remove('is-danger');
+                        lockViewBtn.classList.add('is-success');
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
+                    }
+                });
+            }
+
+            this.fullscreenBtn = document.getElementById('fullscreenBtn');
+            this.isFullscreen = false;
+            if (this.fullscreenBtn) {
+                this.fullscreenBtn.addEventListener('click', () => {
+                    this.isFullscreen = !this.isFullscreen;
+                    const minimiseIcon = this.fullscreenBtn.querySelector('.minimise-view');
+                    const maximiseIcon = this.fullscreenBtn.querySelector('.maximise-view');
+                    if (this.isFullscreen) {
+                        document.documentElement.requestFullscreen();
+                        showNotification('Fullscreen view enabled.');
+                        if (minimiseIcon) minimiseIcon.style.display = 'block';
+                        if (maximiseIcon) maximiseIcon.style.display = 'none';
+                        fullscreenBtn.setAttribute("data-tooltip","Fullscreen view enabled");
+                    } else {
+                        document.exitFullscreen();
+                        showNotification('Windowed view enabled.');
+                        if (minimiseIcon) minimiseIcon.style.display = 'none';
+                        if (maximiseIcon) maximiseIcon.style.display = 'block';
+                        fullscreenBtn.setAttribute("data-tooltip","Window view enabled");
+                    }
+                });
+            }
+
+
+            // Coverage batching
+            this.coverageNeedsUpdate = false;
+            this.coverageUpdateInterval = setInterval(() => {
+                if (this.coverageNeedsUpdate) {
+                    this.calculateCoverage();
+                    this.coverageNeedsUpdate = false;
+                }
+            }, 250);
+
+            // Wait for model to load
+            this.el.addEventListener('model-loaded', () => {
+                this.mesh = this.el.getObject3D('mesh');
+                if (!this.mesh) return;
+                // Set initial textures
+                this.changeTextures('baseTextureDry', 'maskTextureDry');
+            });
+
+            // Brush preview overlay
+            this.brushPreviewCanvas = document.getElementById('brushPreviewOverlay');
+            this.brushPreviewCtx = this.brushPreviewCanvas.getContext('2d');
+            // Resize overlay to window
+            const resizeBrushPreview = () => {
+                this.brushPreviewCanvas.width = window.innerWidth;
+                this.brushPreviewCanvas.height = window.innerHeight;
+            };
+            resizeBrushPreview();
+            window.addEventListener('resize', resizeBrushPreview);
+
+            // Show/hide and update brush preview
+            this.showBrushPreview = (x, y) => {
+                this.brushPreviewCanvas.style.display = 'block';
+                this.brushPreviewCtx.clearRect(0, 0, this.brushPreviewCanvas.width, this.brushPreviewCanvas.height);
+                this.brushPreviewCtx.beginPath();
+                const radius = (this.brushSize + this.brushPreviewFudge) / 2;
+                this.brushPreviewCtx.arc(x, y, radius, 0, 2 * Math.PI);
+                this.brushPreviewCtx.strokeStyle = this.brushColor;
+                this.brushPreviewCtx.lineWidth = 2;
+                this.brushPreviewCtx.globalAlpha = 0.7;
+                this.brushPreviewCtx.stroke();
+                this.brushPreviewCtx.globalAlpha = 1.0;
+            };
+            this.hideBrushPreview = () => {
+                this.brushPreviewCanvas.style.display = 'none';
+                this.brushPreviewCtx.clearRect(0, 0, this.brushPreviewCanvas.width, this.brushPreviewCanvas.height);
+            };
+
+            // Helper to update cursor
+            this.updateCursor = (overPaintable) => {
+                if (overPaintable) {
+                        document.body.style.cursor = 'crosshair';
+                    } else {
+                    if (this.isViewLocked) {
+                        document.body.style.cursor = 'not-allowed';
+                    } else {
+                        document.body.style.cursor = 'grab';
+                    }
+                }
+            };
+
+            // Set default cursor on init
+            document.body.style.cursor = 'grab';
+
+            // Touch painting support
+            const sceneEl = this.el.sceneEl;
+            sceneEl.addEventListener('touchstart', (e) => {
+                console.log('touchstart', e);
+                console.log('isDryTeethState:', this.isDryTeethState);
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (!touch) return;
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = touch.clientX;
+                const clientY = touch.clientY;
+                this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                if (intersects.length > 0 && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        this.isPainting = true;
+                        this.lastPaintY = clientY;
+                        this.downstrokeDelta = 0;
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                        this.showBrushPreview(clientX, clientY);
+                        this.updateCursor(true);
+                        console.log('Set isPainting:', this.isPainting);
+                    } else {
+                        const uv = intersects[0].uv;
+                        const x = Math.floor(uv.x * this.canvasResolution);
+                        const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                        const idx = (y * this.canvasResolution + x) * 4;
+                        if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                            this.isPainting = true;
+                            this.lastPaintY = clientY;
+                            this.downstrokeDelta = 0;
+                            if (this.orbitCamera && !this.isViewLocked) {
+                                this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                            }
+                            this.showBrushPreview(clientX, clientY);
+                            this.updateCursor(true);
+                            console.log('Set isPainting:', this.isPainting);
+                        }
+                    }
+                }
+            }, { passive: false });
+
+            sceneEl.addEventListener('touchmove', (e) => {
+                console.log('touchmove', e);
+                console.log('touchmove, isPainting:', this.isPainting);
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (!touch) return;
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = touch.clientX;
+                const clientY = touch.clientY;
+                this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                let overPaintable = false;
+                if (intersects.length > 0 && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        overPaintable = true;
+                        // Disable orbit controls when hovering over teeth in dryteeth state
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                    } else {
+                        const uv = intersects[0].uv;
+                        const x = Math.floor(uv.x * this.canvasResolution);
+                        const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                        const idx = (y * this.canvasResolution + x) * 4;
+                        if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                            overPaintable = true;
+                        }
+                    }
+                } else {
+                    // Not hovering over teeth, enable orbit controls if not locked
+                    if (this.isDryTeethState && this.orbitCamera && !this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
+                    }
+                }
+                if (this.isPainting) {
+                    this.showBrushPreview(clientX, clientY);
+                    // Call paintFromMouse with a fake event
+                    this.paintFromMouse({ clientX, clientY });
+                } else if (overPaintable) {
+                    this.showBrushPreview(clientX, clientY);
+                } else {
+                    this.hideBrushPreview();
+                }
+                this.updateCursor(overPaintable);
+            }, { passive: false });
+
+            sceneEl.addEventListener('mousemove', (e) => {
+                if (!this.mesh) return;
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                let overPaintable = false;
+                if (intersects.length > 0 && intersects[0] && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        overPaintable = true;
+                        // Disable orbit controls when hovering over teeth in dryteeth state
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                    } else {
+                    const uv = intersects[0].uv;
+                    const x = Math.floor(uv.x * this.canvasResolution);
+                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                    const idx = (y * this.canvasResolution + x) * 4;
+                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                        overPaintable = true;
+                        }
+                    }
+                } else {
+                    // Not hovering over teeth, enable orbit controls if not locked
+                    if (this.isDryTeethState && this.orbitCamera && !this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
+                    }
+                }
+                if (this.isPainting) {
+                    this.showBrushPreview(e.clientX, e.clientY);
+                    this.paintFromMouse(e);
+                } else if (overPaintable) {
+                    this.showBrushPreview(e.clientX, e.clientY);
+                } else {
+                    this.hideBrushPreview();
+                }
+                this.updateCursor(overPaintable);
+            });
+
+            sceneEl.addEventListener('mousedown', (e) => {
+                const canvas = sceneEl.renderer.domElement;
+                const rect = canvas.getBoundingClientRect();
+                this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+                const intersects = this.raycaster.intersectObject(this.mesh, true);
+                if (intersects.length > 0 && intersects[0].uv) {
+                    if (this.isDryTeethState) {
+                        this.isPainting = true;
+                        this.lastPaintY = e.clientY;
+                        this.downstrokeDelta = 0;
+                        if (this.orbitCamera && !this.isViewLocked) {
+                            this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                        }
+                        this.showBrushPreview(e.clientX, e.clientY);
+                        this.updateCursor(true);
+                    } else {
+                    const uv = intersects[0].uv;
+                    const x = Math.floor(uv.x * this.canvasResolution);
+                    const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                    const idx = (y * this.canvasResolution + x) * 4;
+                    if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                        this.isPainting = true;
+                        this.lastPaintY = e.clientY;
+                        this.downstrokeDelta = 0;
+                            if (this.orbitCamera && !this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', false);
+                            }
+                        this.showBrushPreview(e.clientX, e.clientY);
+                        this.updateCursor(true);
+                        }
+                    }
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (this.isPainting) {
+                    this.isPainting = false;
+                    this.lastPaintY = null;
+                    this.downstrokeDelta = 0;
+                    if (!this.isViewLocked) {
+                        this.orbitCamera.setAttribute('orbit-controls', 'enableRotate', true);
+                    }
+                }
+                this.updateCursor(false);
+            });
+
+            // Brush texture for fake normal effect
+            this.useTextureBrush = true;
+            this.brushTexture = new window.Image();
+            this.brushTexture.src = './assets/3d/fluoride-brush.png';
+            this.brushPattern = null;
+            this.brushTexture.onload = () => {
+                this.brushPattern = this.paintLayerCtx.createPattern(this.brushTexture, 'repeat');
+            };
+
+            // Add zoom tracking
+            this.zoomDisplay = document.getElementById('zoomValue');
+            this.zoomContainer = document.getElementById('zoomDisplay');
+            this.initialDistance = 3.5;
+            this.lastZoomPercent = null;
+            this.zoomTimeout = null;
+            this.isZooming = false;
+
+            // Add zoom event listeners
+            const scene = this.el.sceneEl;
+            if (scene) {
+                scene.addEventListener('mousewheel', this.onZoom.bind(this));
+                scene.addEventListener('touchmove', this.onZoom.bind(this));
+            }
+
+
+
+            // Optionally, increase renderer exposure for more vibrancy:
+            this.el.sceneEl.addEventListener('renderstart', () => {
+                if (this.el.sceneEl.renderer) {
+                    this.el.sceneEl.renderer.toneMappingExposure = 1.2;
+                }
+            });
+        },
+        onZoom: function(event) {
+            this.isZooming = true;
+
+            // If it's a touch event, only show zoom panel for pinch
+            if (event.touches) {
+                if (event.touches.length >= 2) {
+                    if (this.zoomContainer) this.zoomContainer.classList.add('is-visible');
+                } else {
+                    if (this.zoomContainer) this.zoomContainer.classList.remove('is-visible');
+                }
+            } else {
+                // Mouse wheel or other event: always show zoom panel
+                if (this.zoomContainer) this.zoomContainer.classList.add('is-visible');
+            }
+
+            if (this.zoomTimeout) {
+                clearTimeout(this.zoomTimeout);
+            }
+
+            this.zoomTimeout = setTimeout(() => {
+                if (this.zoomContainer) {
+                    this.zoomContainer.classList.remove('is-visible');
+                }
+                this.zoomTimeout = null;
+                this.isZooming = false;
+            }, 2000);
+        },
+        tick: function () {
+            // Real-time zoom update
+            const camera = document.querySelector('[camera]');
+            if (!camera) return;
+            const controls = camera.components['orbit-controls'];
+            if (!controls || !controls.controls) return;
+            const threeControls = controls.controls;
+            const currentDistance = threeControls.object.position.distanceTo(threeControls.target);
+            // Get min and max distance from orbit-controls attribute
+            const orbitAttr = camera.getAttribute('orbit-controls');
+            const minDistance = orbitAttr.minDistance || 2.7;
+            const maxDistance = orbitAttr.maxDistance || 3.5;
+            let zoomPercent = ((maxDistance - currentDistance) / (maxDistance - minDistance)) * 100;
+            zoomPercent = Math.max(0, Math.min(100, Math.round(zoomPercent)));
+
+            // Update zoom value if we're zooming
+            if (this.isZooming && this.zoomDisplay) {
+                this.zoomDisplay.textContent = zoomPercent + '%';
+            }
+        },
+        remove: function() {
+            // Clean up timeout and event listeners
+            if (this.zoomTimeout) {
+                clearTimeout(this.zoomTimeout);
+            }
+            const scene = this.el.sceneEl;
+            if (scene) {
+                scene.removeEventListener('mousewheel', this.onZoom);
+                scene.removeEventListener('touchmove', this.onZoom);
+            }
+        },
+        applyTexture: function () {
+            if (!this.baseImage || !this.mesh) return;
+            
+            // Composite: base + paint layer
+            this.paintCtx.clearRect(0, 0, this.canvasResolution, this.canvasResolution);
+            this.paintCtx.drawImage(this.baseImage, 0, 0, this.canvasResolution, this.canvasResolution);
+            this.paintCtx.drawImage(this.paintLayerCanvas, 0, 0, this.canvasResolution, this.canvasResolution);
+            this.texture.needsUpdate = true;
+            
+            // Set on all mesh materials
+            this.mesh.traverse(obj => {
+                if (obj.isMesh && obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(mat => {
+                            mat.map = this.texture;
+                            mat.needsUpdate = true;
+                        });
+                    } else {
+                        obj.material.map = this.texture;
+                        obj.material.needsUpdate = true;
+                    }
+                }
+            });
+        }, 
+        paintFromMouse: function(e) {
+            if (!this.mesh || !this.maskData) return;
+            const sceneEl = this.el.sceneEl;
+            const canvas = sceneEl.renderer.domElement;
+            const rect = canvas.getBoundingClientRect();
+            this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            this.raycaster.setFromCamera(this.mouse, sceneEl.camera);
+            const intersects = this.raycaster.intersectObject(this.mesh, true);
+            if (intersects.length > 0 && intersects[0].uv) {
+                const uv = intersects[0].uv;
+                const x = Math.floor(uv.x * this.canvasResolution);
+                const y = Math.floor((1 - uv.y) * this.canvasResolution);
+                // Only paint if mask is white here
+                const idx = (y * this.canvasResolution + x) * 4;
+                if (this.maskData.data[idx] > 200 && this.maskData.data[idx+1] > 200 && this.maskData.data[idx+2] > 200) {
+                    // Upstroke detection logic (only if forceDownstrokes is true)
+                    if (this.forceDownstrokes && this.lastPaintY !== null) {
+                        const deltaY = e.clientY - this.lastPaintY;
+                        if (deltaY < 0) {
+                            this.upstrokeDelta += Math.abs(deltaY);
+                            this.downstrokeDelta = 0;
+                        } else {
+                            this.downstrokeDelta += deltaY;
+                            this.upstrokeDelta = 0;
+                        }
+                        // If upstroke exceeds threshold, show warning and prevent painting
+                        if (this.upstrokeDelta > this.upstrokeThreshold) {
+                            const now = Date.now();
+                            if (now - this.lastInvalidPaintEvent > this.invalidPaintCooldown) {
+                                window.dispatchEvent(new Event('invalid-paint-direction'));
+                                this.lastInvalidPaintEvent = now;
+                            }
+                            return; // Prevent painting on upstroke
+                        }
+                    }
+                    this.lastPaintY = e.clientY;
+                    this.paintLayerCtx.save();
+                    this.paintLayerCtx.beginPath();
+                    this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                    this.paintLayerCtx.closePath();
+                    this.paintLayerCtx.clip();
+                    if (this.isDryTeethState) {
+                        // In dry teeth state, copy pixels from baseTexturePaint
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = this.canvasResolution;
+                        tempCanvas.height = this.canvasResolution;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(this.paintImage, 0, 0, this.canvasResolution, this.canvasResolution);
+                        this.paintLayerCtx.drawImage(
+                            tempCanvas,
+                            x - this.brushSize / 2,
+                            y - this.brushSize / 2,
+                            this.brushSize,
+                            this.brushSize,
+                            x - this.brushSize / 2,
+                            y - this.brushSize / 2,
+                            this.brushSize,
+                            this.brushSize
+                        );
+                    } else {
+                    if (this.brushPattern) {
+                        this.paintLayerCtx.globalAlpha = 1.0;
+                        this.paintLayerCtx.fillStyle = this.brushPattern;
+                        this.paintLayerCtx.fillRect(
+                            x - this.brushSize / 2,
+                            y - this.brushSize / 2,
+                            this.brushSize,
+                            this.brushSize
+                        );
+                            this.paintLayerCtx.globalAlpha = 0.5;
+                        this.paintLayerCtx.fillStyle = this.brushColor;
+                        this.paintLayerCtx.beginPath();
+                        this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                        this.paintLayerCtx.fill();
+                            this.paintLayerCtx.globalAlpha = 1.0;
+                    } else {
+                        this.paintLayerCtx.fillStyle = this.brushColor;
+                        this.paintLayerCtx.beginPath();
+                        this.paintLayerCtx.arc(x, y, this.brushSize / 2, 0, 2 * Math.PI);
+                        this.paintLayerCtx.fill();
+                        }
+                    }
+                    this.paintLayerCtx.restore();
+                    this.applyTexture();
+                    this.coverageNeedsUpdate = true;
+                    // SFX for drying and painting dabs is temporarily disabled
+                    // if (typeof PlayAudioSFX === 'function') {
+                    //     let sfxId = null;
+                    //     if (this.isDryTeethState) {
+                    //         sfxId = '#SFX-drying';
+                    //     } else if (this.isPaintTeethState) {
+                    //         sfxId = '#SFX-painting';
+                    //     }
+                    //     if (sfxId) {
+                    //         const audioEl = document.querySelector(sfxId);
+                    //         if (audioEl) {
+                    //             const clone = audioEl.cloneNode();
+                    //             clone.volume = 0.5;
+                    //             clone.play().catch(() => {});
+                    //         }
+                    //     }
+                    // }
+                }
+            }
+        },
+        calculateCoverage: function() {
+            console.log('[Coverage] calculateCoverage called. State:', this.isDryTeethState ? 'dryteeth' : (this.isPaintTeethState ? 'paintteeth' : 'unknown'));
+            if (!this.maskData) return;
+            const paintData = this.paintLayerCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
+            let paintableCount = 0;
+            let paintedCount = 0;
+            for (let i = 0; i < this.maskData.data.length; i += 4) {
+                if (this.maskData.data[i] > 200 && this.maskData.data[i + 1] > 200 && this.maskData.data[i + 2] > 200) {
+                    paintableCount++;
+                    if (paintData.data[i + 3] > 0) {
+                        paintedCount++;
+                    }
+                }
+            }
+            this.paintablePixels = paintableCount;
+            this.paintedPixels = paintedCount;
+            let coverage = paintableCount > 0 ? (paintedCount / paintableCount * 100) : 0;
+            let displayPercent = coverage.toFixed(1);
+            let isComplete = false;
+            let autoComplete = false;
+
+
+
+            if (coverage >= 90) {
+                isComplete = true;
+            }
+            // Use different autoComplete thresholds for each state
+            let autoCompleteThreshold = 98.5;
+            if (this.isPaintTeethState) autoCompleteThreshold = 98;
+            if (coverage >= autoCompleteThreshold) {
+                autoComplete = true;
+                displayPercent = '100';
+                // Set auto-complete flags
+                if (this.isDryTeethState) this.dryteethAutoComplete = true;
+                if (this.isPaintTeethState) this.paintteethAutoComplete = true;
+            }
+            let percent = Math.max(0, Math.min(100, Number(displayPercent)));
+
+            // Always update the state variables with the current percent
+            if (this.isDryTeethState) this.dryteeth = percent;
+            if (this.isPaintTeethState) this.paintteeth = percent;
+            console.log('[Coverage] Updated percent:', percent, 'dryteeth:', this.dryteeth, 'paintteeth:', this.paintteeth);
+
+            if (isComplete) {
+                if (typeof PlayAudioSFX === 'function' && !this.SFXPlayed90) {
+                    PlayAudioSFX('#SFX-90-percent',100,100,0.25);
+                    this.SFXPlayed90 = true;
+                }
+                if (autoComplete) {
+                    percent = 100;
+                    if (this.isDryTeethState) {
+                        this.dryteeth = 100;
+                        this.dryteethAutoComplete = true;
+                    }
+                    if (this.isPaintTeethState) {
+                        this.paintteeth = 100;
+                        this.paintteethAutoComplete = true;
+                    }
+                    // Update summary values immediately
+                    if (this.isDryTeethState) {
+                        const dryteethResult = document.getElementById('dryteethResult');
+                        if (dryteethResult) dryteethResult.textContent = '100';
+                        console.log('[Coverage] Auto-complete: dryteeth set to 100, dryteethResult updated to 100');
+                    }
+                    if (this.isPaintTeethState) {
+                        const paintteethResult = document.getElementById('paintteethResult');
+                        if (paintteethResult) paintteethResult.textContent = '100';
+                        console.log('[Coverage] Auto-complete: paintteeth set to 100, paintteethResult updated to 100');
+                    }
+                    console.log('[Coverage] At auto-complete: dryteeth =', this.dryteeth, 'paintteeth =', this.paintteeth);
+                }
+            } else {
+                this.SFXPlayed90 = false;
+            }
+            // Update progress bar
+            const coverageContainer = document.getElementById('coverageContainer');
+            const coverageProgress = document.getElementById('coverageProgress');
+            const coverageLabel = document.getElementById('coverageLabel');
+            
+            // Update all .coverage-number spans
+            document.querySelectorAll('.coverage-number').forEach(el => {
+                el.textContent = `${percent}%`;
+                updatePolygonClipPath(document.querySelector('#coverageClip'), percent);
+            });
+            
+            if (coverageContainer && coverageProgress && coverageLabel) {
+                // Ensure container is visible
+                if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
+                    const state = sequencer.getCurrentState();
+                    coverageContainer.style.display = (state === 'dryteeth' || state === 'paintteeth') ? 'flex' : 'none';
+            } else {
+                    coverageContainer.style.display = 'none';
+                }
+                
+                // Update progress value
+                coverageProgress.value = percent;
+                // Remove all color classes, then add is-success if complete
+                coverageProgress.className = 'progress is-primary coverage-progress';
+                if (isComplete) {
+                    coverageProgress.classList.remove('is-primary');
+                    coverageProgress.classList.add('is-success');
+                    document.querySelector('.nextButtonContainer').style.display = 'flex';
+                }
+            }
+
+            // Only trigger texture change once per state per completion
+            if (autoComplete && !this._completionTriggered) {
+                this._completionTriggered = true;
+                if (typeof PlayAudioSFX === 'function') PlayAudioSFX('#SFX-100-percent',100,100,0.25);
+                percent = 100;
+                document.querySelectorAll('.coverage-number').forEach(el => {
+                    el.textContent = `${percent}%`;
+                    updatePolygonClipPath(document.querySelector('#coverageClip'), percent);
+                });
+                if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
+                    const state = sequencer.getCurrentState();
+                    const paintableComponent = this;
+                    if (state === 'dryteeth') {
+                        // Change to dryteeth-complete.png
+                        const img = document.getElementById('baseTextureDryComplete');
+                        if (img) {
+                            paintableComponent.baseImage = img;
+                            paintableComponent.applyTexture();
+                        }
+                    } else if (state === 'paintteeth') {
+                        // Change to paintteeth-complete
+                        const img = document.getElementById('baseTexturePaintComplete');
+                        if (img) {
+                            paintableComponent.baseImage = img;
+                            paintableComponent.applyTexture();
+                        }
+                    }
+                }
+            }
+            // Reset trigger if not complete
+            if (!isComplete) {
+                this._completionTriggered = false;
+            }
+        },
+        changeTextures: function(baseTextureId, maskTextureId) {
+            console.log('changeTextures called with:', baseTextureId, maskTextureId);
+            // Clear existing paint
+            this.paintLayerCtx.clearRect(0, 0, this.canvasResolution, this.canvasResolution);
+            
+            // Set state based on texture IDs
+            console.log('Setting isDryTeethState:', (baseTextureId === 'baseTextureDry'));
+            this.isDryTeethState = (baseTextureId === 'baseTextureDry');
+            this.isPaintTeethState = (baseTextureId === 'baseTexturePaint');
+
+            // Load new base texture
+            this.baseImage = document.getElementById(baseTextureId);
+            if (!this.baseImage) {
+                console.error(`Base texture ${baseTextureId} not found`);
+                return;
+            }
+
+            // Load new mask texture
+            this.maskImage = document.getElementById(maskTextureId);
+            if (!this.maskImage) {
+                console.error(`Mask texture ${maskTextureId} not found`);
+                return;
+            }
+
+            // Load the paint texture for reference in dry teeth state
+            if (this.isDryTeethState) {
+                this.paintImage = document.getElementById('baseTexturePaint');
+                if (!this.paintImage) {
+                    console.error('Paint texture not found');
+                    return;
+                }
+            }
+
+            // Handle base texture loading
+            if (this.baseImage.complete) {
+                this.applyTexture();
+            } else {
+                this.baseImage.onload = () => {
+                    this.applyTexture();
+                };
+            }
+
+            // Handle mask texture loading
+            if (this.maskImage.complete) {
+                this.maskCtx.drawImage(this.maskImage, 0, 0, this.canvasResolution, this.canvasResolution);
+                this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
+            } else {
+                this.maskImage.onload = () => {
+                    this.maskCtx.drawImage(this.maskImage, 0, 0, this.canvasResolution, this.canvasResolution);
+                    this.maskData = this.maskCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
+                };
+            }
+        }
+    });
+
+    // UI handler for invalid-paint-direction event
+    (function() {
+      let warningTimeout = null;
+      const warningDiv = document.getElementById('downstrokeWarning');
+      window.addEventListener('invalid-paint-direction', function() {
+        if (warningTimeout) {
+          clearTimeout(warningTimeout);
+        }
+        showNotification('Only downstrokes are allowed.', 'is-danger is-light');
+      });
+    })();
+
+      // Wait for both DOM and A-Frame to be ready
+      document.addEventListener('DOMContentLoaded', () => {
+            const scene = document.querySelector('a-scene');
+            if (scene) {
+                scene.addEventListener('loaded', () => { 
+                    console.log('scene loaded');
+                    if (AFRAME.utils.getUrlParameter('debug') === 'true') {
+                        var script = document.createElement('script');
+                        script.src = './core/js/debug.js';
+                        document.head.appendChild(script);
+                    }
+
+                });
+            }
+        });
+
+    // Add clear button logic
+    document.querySelectorAll('.clearBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            sequencer.clearPainting();
+        });
+    });
+
+    // Handle app restart
+    document.getElementById('restartApp').addEventListener('click', () => {
+        // 1. Clear all timeouts/intervals
+        if (window.notificationTimeout) {
+            clearTimeout(window.notificationTimeout);
+            window.notificationTimeout = null;
+        }
+        // Clear auto-hide timers for instruction boxes
+        document.querySelectorAll('.top-left-general-info').forEach(button => {
+            if (button.autoHideTimeout) {
+                clearTimeout(button.autoHideTimeout);
+                button.autoHideTimeout = null;
+            }
+        });
+        // Clear paintable component timers
+        if (window.paintableComponent && window.paintableComponent.coverageUpdateInterval) {
+            clearInterval(window.paintableComponent.coverageUpdateInterval);
+            window.paintableComponent.coverageUpdateInterval = null;
+        }
+        // Clear zoom timeout
+        if (window.paintableComponent && window.paintableComponent.zoomTimeout) {
+            clearTimeout(window.paintableComponent.zoomTimeout);
+            window.paintableComponent.zoomTimeout = null;
+        }
+
+        // 2. Hide all overlays, modals, and instruction boxes
+        document.querySelectorAll('.aframe-overlay').forEach(overlay => {
+            overlay.style.display = 'none';
+        });
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.classList.remove('is-active', 'is-closing');
+            modal.style.display = 'none';
+        });
+        document.querySelectorAll('.top-left-general-instructions').forEach(box => {
+            box.style.display = 'none';
+            box.classList.remove('fade-in', 'fade-out');
+        });
+        document.querySelectorAll('.top-left-general-info i').forEach(icon => {
+            icon.className = 'fa-solid fa-question fa-beat';
+        });
+
+        // 3. Reset all UI elements
+        const coverageContainer = document.getElementById('coverageContainer');
+        const coverageProgress = document.getElementById('coverageProgress');
+        const coverageLabel = document.getElementById('coverageLabel');
+        const nextButtonContainer = document.querySelector('.nextButtonContainer');
+
+        if (coverageContainer) coverageContainer.style.display = 'none';
+        if (coverageProgress) coverageProgress.value = 0;
+        if (coverageLabel) coverageLabel.textContent = 'Teeth/gums dried:/Fluoride varnish applied:';
+        if (nextButtonContainer) nextButtonContainer.style.display = 'none';
+
+            // Update all .coverage-number spans
+            document.querySelectorAll('.coverage-number').forEach(el => {
+                el.textContent = `0%`;
+                updatePolygonClipPath(document.querySelector('#coverageClip'), 0);
+            });
+
+
+        const zoomDisplay = document.getElementById('zoomDisplay');
+        if (zoomDisplay) {
+            zoomDisplay.classList.remove('is-visible');
+        }
+        const zoomValue = document.getElementById('zoomValue');
+        if (zoomValue) {
+            zoomValue.textContent = '0%';
+        }
+        const warningDiv = document.getElementById('downstrokeWarning');
+        if (warningDiv) warningDiv.style.display = 'none';
+        const notificationContainer = document.querySelector('.notification-container');
+        if (notificationContainer) notificationContainer.classList.remove('is-active');
+        // Reset view lock button
+        // const lockViewBtn = document.getElementById('lockViewBtn');
+        // if (lockViewBtn) {
+        //     lockViewBtn.textContent = 'Lock View';
+        //     lockViewBtn.style.background = '#4CAF50';
+        // }
+        // Reset camera controls
+        const camera = document.querySelector('[camera]');
+        if (camera) {
+            camera.setAttribute('orbit-controls', 'enableRotate', true);
+        }
+        // Hide brush preview
+        const brushPreview = document.getElementById('brushPreviewOverlay');
+        if (brushPreview) brushPreview.style.display = 'none';
+
+        // 4. Reset all state flags
+        if (sequencer.paintableComponent) {
+            sequencer.paintableComponent.isPainting = false;
+            sequencer.paintableComponent.isZooming = false;
+            sequencer.paintableComponent.lastPaintY = null;
+            sequencer.paintableComponent.downstrokeDelta = 0;
+            sequencer.paintableComponent.upstrokeDelta = 0;
+            sequencer.paintableComponent.lastInvalidPaintEvent = 0;
+            sequencer.paintableComponent._completionTriggered = false;
+            // Reset coverage/session state
+            sequencer.paintableComponent.paintablePixels = 0;
+            sequencer.paintableComponent.paintedPixels = 0;
+            sequencer.paintableComponent.dryteeth = 0;
+            sequencer.paintableComponent.paintteeth = 0;
+            sequencer.paintableComponent.dryteethAutoComplete = false;
+            sequencer.paintableComponent.paintteethAutoComplete = false;
+            sequencer.paintableComponent.SFXPlayed90 = false;
+            sequencer.paintableComponent.isDryTeethState = false;
+            sequencer.paintableComponent.isPaintTeethState = false;
+            sequencer.paintableComponent.coverageNeedsUpdate = false;
+        }
+        // Reset summary DOM
+        const dryteethResult = document.getElementById('dryteethResult');
+        if (dryteethResult) dryteethResult.textContent = '0';
+        const paintteethResult = document.getElementById('paintteethResult');
+        if (paintteethResult) paintteethResult.textContent = '0';
+
+        // 5. Set sequencer to initial state after everything is reset
+        setTimeout(() => {
+            if (typeof sequencer !== 'undefined') {
+                sequencer.setState('start');
+            }
+        }, 0);
+    });
+
+    // Sway camera component
+    AFRAME.registerComponent('sway-camera', {
+      schema: {
+        amplitude: {type: 'number', default: 5}, // degrees
+        speed: {type: 'number', default: 0.5},   // cycles per second
+        loops: {type: 'number', default: 1}      // number of cycles, -1 for infinite
+      },
+      init: function () {
+        this.baseRotation = this.el.getAttribute('rotation');
+        this.startTime = Date.now();
+        this.stopped = false;
+        // Lock orbit controls
+        if (this.el.components['orbit-controls']) {
+          this.el.setAttribute('orbit-controls', 'enableRotate', false);
+        }
+      },
+      tick: function () {
+        if (this.stopped) return;
+        const t = (Date.now() - this.startTime) / 1000;
+        let amplitude = this.data.amplitude;
+        let sway = 0;
+
+        if (this.data.loops !== -1) {
+          const totalTime = this.data.loops / this.data.speed; // seconds
+          const lastLoopStart = totalTime - (1 / this.data.speed);
+          if (t >= lastLoopStart) {
+            // Ease out in the last loop
+            const progress = (t - lastLoopStart) * this.data.speed; // 0 to 1
+            const ease = 1 - Math.pow(progress, 2); // quadratic ease-out
+            amplitude *= Math.max(0, ease);
+          }
+          if (t >= totalTime) {
+            this.stopped = true;
+            this.el.setAttribute('rotation', this.baseRotation);
+            if (this.el.components['orbit-controls']) {
+              this.el.setAttribute('orbit-controls', 'enableRotate', true);
+            }
+            this.el.removeAttribute('sway-camera');
+            return;
+          }
+        }
+
+        sway = amplitude * Math.sin(2 * Math.PI * this.data.speed * t);
+        this.el.setAttribute('rotation', {
+          x: this.baseRotation.x,
+          y: this.baseRotation.y + sway,
+          z: this.baseRotation.z
+        });
+      }
+    });
+
+    // Global function to toggle camera sway from the console
+    window.toggleCameraSway = function(amplitude = 5, speed = 0.2, loops = 1) {
+      const cameraEl = document.querySelector('[camera]');
+      if (!cameraEl) {
+        console.warn('Camera entity not found!');
+        return;
+      }
+      if (cameraEl.hasAttribute('sway-camera')) {
+        cameraEl.removeAttribute('sway-camera');
+        cameraEl.setAttribute('rotation', {x: 0, y: 0, z: 0});
+        console.log('Camera sway disabled.');
+      } else {
+        cameraEl.setAttribute('sway-camera', `amplitude: ${amplitude}; speed: ${speed}; loops: ${loops}`);
+        console.log('Camera sway enabled.');
+      }
+    };
+
+    // Notification system
+    let notificationTimeout = null;
+    const notificationContainer = document.querySelector('.notification-container');
+    const notificationContent = notificationContainer.querySelector('.notification-content');
+    const notificationDelete = notificationContainer.querySelector('.notification .delete');
+
+    function showNotification(content, className = '', autoClose = true) {
+        // Clear any existing timeout
+        if (notificationTimeout) {
+            clearTimeout(notificationTimeout);
+            notificationTimeout = null;
+        }
+
+        // Hide notification immediately if it's visible
+        if (notificationContainer.classList.contains('is-active')) {
+            notificationContainer.classList.remove('is-active');
+        }
+
+        // Update content and class
+        notificationContent.textContent = content;
+        const notification = notificationContainer.querySelector('.notification');
+        
+        // Remove any existing custom classes
+        notification.className = 'notification';
+        
+        // Add new custom classes if provided
+        if (className) {
+            // Split the className string into individual classes and add each one
+            className.split(' ').forEach(cls => {
+                if (cls.trim()) {  // Only add non-empty class names
+                    notification.classList.add(cls.trim());
+                }
+            });
+        }
+
+        // Show notification with fade in
+        requestAnimationFrame(() => {
+            notificationContainer.classList.add('is-active');
+        });
+
+        // Set timeout for fade out only if autoClose is true
+        if (autoClose) {
+            notificationTimeout = setTimeout(() => {
+                notificationContainer.classList.remove('is-active');
+                notificationTimeout = null;
+            }, 2000);
+        }
+    }
+
+    // Add click handler for delete button
+    notificationDelete.addEventListener('click', () => {
+        if (notificationTimeout) {
+            clearTimeout(notificationTimeout);
+            notificationTimeout = null;
+        }
+        notificationContainer.classList.remove('is-active');
+    });
+
+    // Example usage:
+    // showNotification('Your message here'); // Will auto-close after 2 seconds
+    // showNotification('Your message here', 'is-warning'); // Single class
+    // showNotification('Your message here', 'is-danger is-light'); // Multiple classes
+    // showNotification('Your message here', 'is-success is-light', false); // Multiple classes, no auto-close
+
+    // Debug: Save paint preview canvas as PNG when 'P' is pressed
+    document.addEventListener('keydown', function(e) {
+        // Only in debug mode
+        if (AFRAME.utils.getUrlParameter('debug') === 'true' && e.key.toLowerCase() === 'p') {
+            const paintableElement = document.querySelector('[paintable-texture]');
+            if (paintableElement && paintableElement.components['paintable-texture']) {
+                // You can choose paintLayerCanvas (user paint only) or paintCanvas (composited)
+                const comp = paintableElement.components['paintable-texture'];
+                const canvas = comp.paintCanvas || comp.paintLayerCanvas;
+                if (canvas) {
+                    const link = document.createElement('a');
+                    link.download = 'paint-preview.png';
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showNotification('Paint preview saved as PNG.', 'is-success is-light');
+                } else {
+                    showNotification('No paint preview canvas found.', 'is-danger is-light');
+                }
+            } else {
+                showNotification('Paintable component not found.', 'is-danger is-light');
+            }
+        }
+    });
+
+    // Global SFX player function supporting multiple simultaneous SFX
+    window.PlayAudioSFX = function(url, fadeInMs = 100, fadeOutMs = 200, volume = 1.0) {
+        // If url starts with #, treat as asset ID
+        if (url && url[0] === '#') {
+            const audioEl = document.querySelector(url);
+            if (audioEl) {
+                // Reset if already playing
+                audioEl.pause();
+                audioEl.currentTime = 0;
+                audioEl.volume = volume;
+                audioEl.play();
+                return;
+            }
+        }
+        // Fallback: create a new audio element for each SFX
+        const audio = document.createElement('audio');
+        audio.preload = 'auto';
+        audio.src = url;
+        audio.volume = 0;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        let fadeInInterval, fadeOutTimeout, fadeOutInterval;
+        let duration = 0;
+        audio.onloadedmetadata = function() {
+            duration = audio.duration;
+            audio.play();
+            // Fade in
+            let t = 0;
+            const fadeInStep = 1 / (fadeInMs / 20);
+            fadeInInterval = setInterval(() => {
+                t += fadeInStep;
+                audio.volume = Math.min(volume, t * volume);
+                if (audio.volume >= volume) {
+                    clearInterval(fadeInInterval);
+                }
+            }, 20);
+            // Schedule fade out
+            fadeOutTimeout = setTimeout(() => {
+                let v = volume;
+                const fadeOutStep = 1 / (fadeOutMs / 20);
+                fadeOutInterval = setInterval(() => {
+                    v -= fadeOutStep * volume;
+                    audio.volume = Math.max(0, v);
+                    if (audio.volume <= 0) {
+                        clearInterval(fadeOutInterval);
+                        audio.pause();
+                        audio.currentTime = 0;
+                        if (audio.parentNode) audio.parentNode.removeChild(audio);
+                    }
+                }, 20);
+            }, Math.max(0, (duration * 1000) - fadeOutMs));
+        };
+        // Clean up on end
+        audio.onended = function() {
+            clearInterval(fadeInInterval);
+            clearInterval(fadeOutInterval);
+            clearTimeout(fadeOutTimeout);
+            audio.volume = 0;
+            if (audio.parentNode) audio.parentNode.removeChild(audio);
+        };
+    };
+
+    // Global function to update a polygon clip-path based on percent
+    window.updatePolygonClipPath = function(element, percent) {
+      // Clamp percent between 0 and 100
+      percent = Math.max(0, Math.min(100, percent));
+
+      // Convert to fraction of 100
+      const rightX = percent.toFixed(2) + '%';
+
+      // Define a polygon where top-right and bottom-right are affected
+      const clipPathValue = `polygon(
+        0% 0%,          /* top-left */
+        ${rightX} 0%,   /* top-right (dynamic) */
+        ${rightX} 100%, /* bottom-right (dynamic) */
+        0% 100%         /* bottom-left */
+      )`;
+
+      element.style.clipPath = clipPathValue;
+    };
+
+    // Gauze interactivity
+    const gauze = document.getElementById('gauzeRoll');
+    const scene = document.querySelector('a-scene');
+    let gauzeActive = false;
+    let isDryingState = false;
+    // Track latest pointer position (on window for component access)
+    window.gauzeActive = false;
+    window.isDryingState = false;
+    window.latestPointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    window.addEventListener('mousemove', function(evt) {
+        window.latestPointer.x = evt.clientX;
+        window.latestPointer.y = evt.clientY;
+    });
+    window.addEventListener('touchmove', function(evt) {
+        if (evt.touches && evt.touches[0]) {
+            window.latestPointer.x = evt.touches[0].clientX;
+            window.latestPointer.y = evt.touches[0].clientY;
+        }
+    });
+
+    // Show/hide gauze based on state
+    const updateGauzeVisibility = () => {
+        if (typeof sequencer !== 'undefined' && typeof sequencer.getCurrentState === 'function') {
+            const state = sequencer.getCurrentState();
+            window.isDryingState = (state === 'dryteeth');
+            if (gauze) gauze.setAttribute('visible', window.isDryingState);
+        }
+    };
+    // Listen for state changes
+    const originalShowState = sequencer.showState.bind(sequencer);
+    sequencer.showState = function(state) {
+        originalShowState(state);
+        updateGauzeVisibility();
+    };
+    updateGauzeVisibility();
+
+    // Mouse/touch events using A-Frame click
+    if (gauze) {
+        gauze.addEventListener('click', function (evt) {
+            console.log('Gauze clicked!', evt);
+            if (!window.isDryingState) return;
+            window.gauzeActive = true;
+        });
+        window.addEventListener('mouseup', function () {
+            window.gauzeActive = false;
+        });
+        window.addEventListener('touchend', function () {
+            window.gauzeActive = false;
+        });
+        // Add tick function to move gauze every frame if active
+        gauze.setAttribute('tick', '');
+        gauze.tick = function () {
+            if (window.gauzeActive && window.isDryingState) {
+                const scene = document.querySelector('a-scene');
+                const camera = scene.camera;
+                if (!camera) return;
+                const mouse = {
+                    x: (window.latestPointer.x / window.innerWidth) * 2 - 1,
+                    y: -(window.latestPointer.y / window.innerHeight) * 2 + 1
+                };
+                const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+                this.object3D.position.copy(vector);
+            }
+        };
+    }
+    // Move gauze with mouse/touch if active
+    scene.addEventListener('mousemove', function (evt) {
+        if (!window.gauzeActive || !window.isDryingState) return;
+        const mouse = { x: (evt.clientX / window.innerWidth) * 2 - 1, y: -(evt.clientY / window.innerHeight) * 2 + 1 };
+        const camera = scene.camera;
+        if (!camera) return;
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+        gauze.object3D.position.copy(vector);
+    });
+    scene.addEventListener('touchmove', function (evt) {
+        if (!window.gauzeActive || !window.isDryingState) return;
+        const touch = evt.touches[0];
+        const mouse = { x: (touch.clientX / window.innerWidth) * 2 - 1, y: -(touch.clientY / window.innerHeight) * 2 + 1 };
+        const camera = scene.camera;
+        if (!camera) return;
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+        gauze.object3D.position.copy(vector);
+    });
+
+    // Register the instrument-follow component (robust version)
+    AFRAME.registerComponent('instrument-follow', {
+      tick: function () {
+        // Always log for debug
+        // console.log('instrument-follow tick always running');
+        if (window.gauzeActive && window.isDryingState) {
+          // Get the camera entity and its THREE.Camera
+          const cameraEl = document.querySelector('[camera]');
+          if (!cameraEl) return;
+          const camera = cameraEl.getObject3D('camera');
+          if (!camera) return;
+
+          // Convert screen coords to normalized device coords
+          const mouse = {
+            x: (window.latestPointer.x / window.innerWidth) * 2 - 1,
+            y: -(window.latestPointer.y / window.innerHeight) * 2 + 1
+          };
+
+          // Project to a point 2 units in front of the camera
+          const vector = new THREE.Vector3(mouse.x, mouse.y, -1).unproject(camera);
+          this.el.object3D.position.copy(vector);
+        }
+      }
+    });
+
+    console.log('[AutoHide] Top-level script is running');
+
+    window.onload = function() {
+        console.log('[AutoHide] window.onload fired');
+    };
+    </script>
+</body>
+</html>
