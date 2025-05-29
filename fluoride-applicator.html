@@ -11,8 +11,8 @@
     <script src="./core/js/sequencer.js"></script>
 
     <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
-  <link rel="stylesheet" href="./core/css/pkg/bulma-tooltip.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
+    <link rel="stylesheet" href="./core/css/pkg/balloon.css">
     <link rel="stylesheet" href="./core/css/styles.css">
 </head>
 <body>
@@ -154,7 +154,7 @@
 
     <div id="dryteeth" class="aframe-overlay annotate">  
 
-        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="dryteeth-instructions-toggle" aria-label="Toggle dry teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;" ></i></button>
+        <button class="button is-medium is-link top-left-general-info" data-balloon-pos="right" aria-label="Show instructions" id="dryteeth-instructions-toggle"><i class="fa-solid fa-xmark" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;" ></i></button>
 
         <div class="box top-left-general-instructions" id="dryteeth-instructions">
             <h4 class="is-size-4">Step 1: Dry Teeth</h4>
@@ -178,7 +178,7 @@
     </div>
 
     <div id="paintteeth" class="aframe-overlay annotate">  
-        <button class="button is-medium is-link top-left-general-info tooltip is-tooltip-right" data-tooltip="Show instructions" id="paintteeth-instructions-toggle" aria-label="Toggle paint teeth instructions"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <button class="button is-medium is-link top-left-general-info" data-balloon-pos="right" aria-label="Show instructions" id="paintteeth-instructions-toggle"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
         <div class="box top-left-general-instructions" id="paintteeth-instructions">
             <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
@@ -238,12 +238,12 @@
     <!-- Overlay UI: Only for dryteeth/paintteeth states -->
     <div id="aframeContainer">
         <div class="aframe-topright">
-            <button class="button is-medium is-success tooltip is-tooltip-right" data-tooltip="Viewport lock is OFF" id="lockViewBtn" aria-label="Lock/unlock view">
+            <button class="button is-medium is-success" data-balloon-pos="right" aria-label="Viewport lock is OFF" id="lockViewBtn">
                 <i class="fa-solid fa-lock lock-view"  aria-hidden="true" style="display:none;"></i>
                 <i class="fa-solid fa-lock-open unlock-view"  aria-hidden="true" style="display:block;"></i>
             </button>
 
-            <button class="button is-medium is-link tooltip is-tooltip-left" data-tooltip="Window view enabled" id="fullscreenBtn" aria-label="Fullscreen view">
+            <button class="button is-medium is-link" data-balloon-pos="left" aria-label="Window view enabled" id="fullscreenBtn">
                 <i class="fa-solid fa-compress minimise-view"  aria-hidden="true" style="display:none;"></i>
                 <i class="fa-solid fa-expand maximise-view"  aria-hidden="true" style="display:block;"></i>
             </button>
