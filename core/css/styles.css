@@ -149,6 +149,25 @@ a-scene {
     opacity: 1;
 }
 
+.onboarding-guide{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: black;
+  text-align: center;
+  z-index: 0;
+  display: none;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #bbb;
+  padding: 1rem;
+  border-radius: 1rem;
+  width: 12rem;
+  margin-left: -6rem;
+}
+
+
 /* Bulma overrides */
 /* icons in buttons - shrink and pull right */
 .shared-with-icon > i {
@@ -184,8 +203,8 @@ div.top-left-general-instructions {
   position: fixed;
   top: 1rem;
   left: 5.5rem;
-  width: 55%;
-  max-width: 32rem;
+  width: 40rem;
+  max-width: 70%;
 }
 
 .button.top-left-general-info {

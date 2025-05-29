@@ -9,6 +9,7 @@
     <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
     <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
     <script src="./core/js/sequencer.js"></script>
+    <script src="./core/js/components/onboarding-guide.js"></script>
 
     <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
@@ -25,7 +26,7 @@
     </div>
 
     <!-- A-Frame Scene: Sky is always visible -->
-    <a-scene embedded vr-mode-ui="enabled: false">
+    <a-scene embedded vr-mode-ui="enabled: false" onboarding-guide="message: 'Click/touch and swipe to explore'; imageUrl: './assets/images/onboarding-rotate.gif'; cooldown: 10000; maxDisplayTime: 3000;">
         <a-assets>
             <a-asset-item id="teethModel" src="./assets/3d/Dientes.glb"></a-asset-item>
             <!-- Base textures -->
@@ -158,7 +159,7 @@
 
         <div class="box top-left-general-instructions" id="dryteeth-instructions">
             <h4 class="is-size-4">Step 1: Dry Teeth</h4>
-            <p>Dry the gums and teeth by patting dry the areas in <span class="tag is-info is-normal">BLUE</span>. Use downstrokes only.</p>
+            <p>Dry the gums and teeth by patting dry the areas in <span class="tag is-info is-normal">BLUE</span>.</p><p>Use downstrokes only.</p>
             <p>Use the bar below to track your progress. You must clear over 90% to continue.</p>
             <p>&nbsp;</p>
             <div class="column">                        
@@ -182,7 +183,8 @@
 
         <div class="box top-left-general-instructions" id="paintteeth-instructions">
             <h4 class="is-size-4">Step 2: Apply Fluoride Varnish</h4>
-            <p>Apply the fluoride varnish using the brush. Use downstrokes only.</p>    
+            <p>Apply the fluoride varnish from the gum to the edge of the tooth.</p>
+            <p>Use downstrokes away from the gum for the top row of teeth and upstrokes away from the gum for the bottom row.</p>    
             <p>Apply the fuoride varnish on <b>all</b> teeth. Use the bar below to track your progress.</p>
             <p>You must clear over 90% to continue.</p>
             <p>&nbsp;</p>
