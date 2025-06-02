@@ -989,12 +989,18 @@
             this.zoomTimeout = null;
             this.isZooming = false;
 
-            // Add zoom event listeners
-            const scene = this.el.sceneEl;
-            if (scene) {
-                scene.addEventListener('mousewheel', this.onZoom.bind(this));
-                scene.addEventListener('touchmove', this.onZoom.bind(this));
-            }
+            // const scene = this.el.sceneEl;
+   if (scene) {
+       scene.addEventListener('mousewheel', this.onZoom.bind(this));
+       scene.addEventListener('touchmove', this.onZoom.bind(this));
+       scene.addEventListener('wheel', this.onZoom.bind(this));
+       console.log('[paintable-texture] Zoom event listeners attached to scene (mousewheel, touchmove, wheel)');
+       const canvas = scene.renderer && scene.renderer.domElement;
+       if (canvas) {
+           canvas.addEventListener('wheel', this.onZoom.bind(this));
+           console.log('[paintable-texture] Zoom wheel event listener attached to canvas');
+       }
+   }
 
 
 
@@ -1020,8 +1026,21 @@
                     this.strokeMapData = this.strokeMapCtx.getImageData(0, 0, this.canvasResolution, this.canvasResolution);
                 };
             }
+
+            // In paintable-texture init, after adding event listeners:
+            const scene = this.el.sceneEl;
+            if (scene) {
+                scene.addEventListener('wheel', this.onZoom.bind(this));
+                console.log('[paintable-texture] Zoom wheel event listener attached to scene');
+                const canvas = scene.renderer && scene.renderer.domElement;
+                if (canvas) {
+                    canvas.addEventListener('wheel', this.onZoom.bind(this));
+                    console.log('[paintable-texture] Zoom wheel event listener attached to canvas');
+                }
+            }
         },
         onZoom: function(event) {
+            console.log('[paintable-texture] onZoom triggered', event.type);
             this.isZooming = true;
 
             // If it's a touch event, only show zoom panel for pinch
